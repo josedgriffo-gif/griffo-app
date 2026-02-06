@@ -1,98 +1,82 @@
-// api/vehicles.js
-// GET /api/vehicles                           → Listar marcas
-// GET /api/vehicles?brand=Volkswagen          → Listar modelos de una marca
-// GET /api/vehicles?brand=Volkswagen&model=Vento → Listar años
-// GET /api/vehicles?code=VEH123               → Buscar vehículo por código
-
 const fetch = require('node-fetch');
 const { getToken } = require('./_token');
 
 const API_BASE = 'https://external-api.specparts.ai';
 
-// Columnas que necesitamos
-const SHOW_COLUMNS = [
-  'brand', 'master_model', 'version', 'sold_from_year', 'sold_until_year',
-  'engine_displacement_liters', 'transmission', 'fuel_type', 'code',
-  'bosch_segment', 'model_range',
-].map(c => `show_column=${c}`).join('&');
-
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { brand, model, page = 1, limit = 100 } = req.query;
+  const { brand, model } = req.query;
 
   try {
     const token = await getToken();
+    var url = API_BASE + '/vehicle/list?lang=1&page=1&limit=100&market_id=1&show_column=brand&show_column=master_model&show_column=model_range&show_column=version&show_column=sold_from_year&show_column=sold_until_year&show_column=engine_displacement_liters&show_column=transmission&show_column=fuel_type&show_column=code';
 
-    // Construir URL
-    const params = new URLSearchParams();
-    params.set('lang', '1');
-    params.set('page', page);
-    params.set('limit', Math.min(limit, 100));
-    params.set('market_id', '1'); // Argentina
+    console.log('Vehicles URL:', url);
 
-    // Filtros: solo traer vehículos que tienen productos GRIFFO
-    params.set('category[]', 'SUSPENSION');
-
-    let url = `${API_BASE}/vehicle/list?${params.toString()}&${SHOW_COLUMNS}`;
-
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
+    var response = await fetch(url, {
+      headers: { Authorization: 'Bearer ' + token }
     });
 
     if (!response.ok) {
-      throw new Error(`Vehicles API: ${response.status}`);
+      var errText = await response.text();
+      console.log('Vehicles API error:', response.status, errText);
+      throw new Error('Vehicles API: ' + response.status);
     }
 
-    const data = await response.json();
-    const vehicles = data.data || data || [];
+    var data = await response.json();
+    console.log('Vehicles response keys:', Object.keys(data));
+    var vehicles = data.data || data || [];
+    if (!Array.isArray(vehicles)) vehicles = [];
+    console.log('Vehicles count:', vehicles.length);
 
-    // Si piden marcas (sin filtro)
     if (!brand && !model) {
-      const brands = [...new Set(vehicles.map(v => v.brand))].sort();
-      return res.status(200).json({
-        type: 'brands',
-        data: brands.map(b => ({
-          name: b,
-          count: vehicles.filter(v => v.brand === b).length,
-        })),
+      var brandMap = {};
+      vehicles.forEach(function(v) {
+        if (v.brand) {
+          if (!brandMap[v.brand]) brandMap[v.brand] = 0;
+          brandMap[v.brand]++;
+        }
       });
+      var brands = Object.keys(brandMap).sort().map(function(b) {
+        return { name: b, count: brandMap[b] };
+      });
+      return res.status(200).json({ type: 'brands', data: brands });
     }
 
-    // Si piden modelos de una marca
     if (brand && !model) {
-      const filtered = vehicles.filter(v =>
-        v.brand && v.brand.toLowerCase() === brand.toLowerCase()
-      );
-      const models = [...new Set(filtered.map(v => v.master_model || v.model_range))].filter(Boolean).sort();
-      return res.status(200).json({
-        type: 'models',
-        brand: brand,
-        data: models.map(m => {
-          const modelVehs = filtered.filter(v => (v.master_model || v.model_range) === m);
-          const years = modelVehs.map(v => v.sold_from_year).filter(Boolean);
-          return {
-            name: m,
-            year_from: years.length ? Math.min(...years) : null,
-            year_until: years.length ? Math.max(...years) : null,
-            count: modelVehs.length,
-          };
-        }),
+      var filtered = vehicles.filter(function(v) {
+        return v.brand && v.brand.toLowerCase() === brand.toLowerCase();
       });
+      var modelMap = {};
+      filtered.forEach(function(v) {
+        var m = v.master_model || v.model_range;
+        if (m) {
+          if (!modelMap[m]) modelMap[m] = { years: [] };
+          if (v.sold_from_year) modelMap[m].years.push(v.sold_from_year);
+        }
+      });
+      var models = Object.keys(modelMap).sort().map(function(m) {
+        var years = modelMap[m].years;
+        return {
+          name: m,
+          year_from: years.length ? Math.min.apply(null, years) : null,
+          year_until: years.length ? Math.max.apply(null, years) : null,
+          count: years.length
+        };
+      });
+      return res.status(200).json({ type: 'models', brand: brand, data: models });
     }
 
-    // Si piden años de un modelo
     if (brand && model) {
-      const filtered = vehicles.filter(v =>
-        v.brand && v.brand.toLowerCase() === brand.toLowerCase() &&
-        (v.master_model || v.model_range || '').toLowerCase() === model.toLowerCase()
-      );
-
-      // Agrupar por año, devolver versiones disponibles
-      const yearMap = {};
-      filtered.forEach(v => {
-        const y = v.sold_from_year;
+      var filtered2 = vehicles.filter(function(v) {
+        return v.brand && v.brand.toLowerCase() === brand.toLowerCase() &&
+          (v.master_model || v.model_range || '').toLowerCase() === model.toLowerCase();
+      });
+      var yearMap = {};
+      filtered2.forEach(function(v) {
+        var y = v.sold_from_year;
         if (!y) return;
         if (!yearMap[y]) yearMap[y] = [];
         yearMap[y].push({
@@ -100,25 +84,22 @@ module.exports = async function handler(req, res) {
           version: v.version,
           engine: v.engine_displacement_liters,
           transmission: v.transmission,
-          fuel: v.fuel_type,
+          fuel: v.fuel_type
         });
       });
-
-      const years = Object.keys(yearMap).map(Number).sort((a, b) => b - a); // Más nuevo primero
-
+      var years = Object.keys(yearMap).map(Number).sort(function(a,b){return b-a;});
       return res.status(200).json({
         type: 'years',
         brand: brand,
         model: model,
-        data: years.map(y => ({
-          year: y,
-          versions: yearMap[y],
-        })),
+        data: years.map(function(y) {
+          return { year: y, versions: yearMap[y] };
+        })
       });
     }
 
   } catch (error) {
     console.error('Vehicles error:', error);
-    return res.status(500).json({ error: 'Error al consultar vehículos. Intentá de nuevo.' });
+    return res.status(500).json({ error: 'Error al consultar vehículos.' });
   }
 };

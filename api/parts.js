@@ -6,11 +6,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { code, search, vehicle_id, page = 1, limit = 20 } = req.query;
-
-  if (!code && !search && !vehicle_id) {
-    return res.status(400).json({ error: 'Parametro requerido: code, search o vehicle_id' });
-  }
+  const { code, search, vehicle_id, page = 1, limit = 20, debug } = req.query;
 
   try {
     const token = await getToken();
@@ -49,12 +45,14 @@ module.exports = async function handler(req, res) {
     }
 
     var rawText = await response.text();
-    console.log('Parts raw response (500 chars):', rawText.substring(0, 500));
     var data = JSON.parse(rawText);
-    console.log('Parts keys:', Object.keys(data), 'total:', data.total, 'data_length:', data.data ? data.data.length : 'no data');
-
     var rawParts = data.data || data || [];
     if (!Array.isArray(rawParts)) rawParts = [];
+
+    console.log('Parts total:', data.paging ? data.paging.total : 'no paging');
+    if (rawParts.length > 0) {
+      console.log('First part brand:', rawParts[0].brand, 'code:', rawParts[0].code, 'product:', rawParts[0].product);
+    }
 
     var parts = rawParts.map(function(part) {
       return {
@@ -88,7 +86,7 @@ module.exports = async function handler(req, res) {
     });
 
     return res.status(200).json({
-      total: data.total || parts.length,
+      total: data.paging ? data.paging.total : parts.length,
       page: parseInt(page),
       limit: parseInt(limit),
       data: parts

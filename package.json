@@ -1,0 +1,13 @@
+{
+  "name": "griffo-app",
+  "version": "1.0.0",
+  "description": "GRIFFO APP - Buscador de productos de suspensión automotor",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}

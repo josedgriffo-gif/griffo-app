@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#00549F">
+<title>GRIFFO APP - Demo Completo</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#00549F;--accent:#00ADD0;--dark:#005B82;--bg:#F0F4F8;--card:#FFF;--text:#0D1B2A;--muted:#4A6175;--success:#22C55E;--warning:#F59E0B;--error:#DC2626;--whatsapp:#25D366;--ml:#FFE600}
+body{font-family:'Montserrat',sans-serif;background:#1a1a2e;min-height:100vh;display:flex;justify-content:center;align-items:flex-start}
+.app{max-width:480px;width:100%;min-height:100vh;display:flex;flex-direction:column;position:relative;overflow-x:hidden;background:var(--bg)}
+.screen{display:none;flex-direction:column;min-height:100vh}
+.screen.active{display:flex;animation:slideIn .3s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* === HEADER ESTÁNDAR === */
+.header{background:linear-gradient(165deg,var(--dark) 0%,var(--primary) 55%,#003A75 100%);padding:40px 24px 40px;position:relative;border-radius:0 0 32px 32px;box-shadow:0 8px 32px rgba(0,59,117,.25);overflow:hidden;flex-shrink:0}
+.header-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
+.logo-img{width:200px;height:auto}
+.header-slogan{margin-top:6px;font-size:12.5px;font-weight:700;letter-spacing:4.5px;color:var(--accent);text-transform:uppercase}
+.oval{position:absolute;border-radius:50%;pointer-events:none}
+.o1{left:-8%;top:-30%;width:840px;height:560px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);transform:rotate(-25deg)}
+.o2{left:70%;top:-15%;width:700px;height:460px;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transform:rotate(15deg)}
+.back-btn{position:absolute;top:16px;left:16px;z-index:2;background:rgba(255,255,255,.12);border:none;border-radius:10px;padding:8px;cursor:pointer;backdrop-filter:blur(4px)}
+.back-btn svg{display:block}
+.profile-btn{position:absolute;top:16px;right:16px;z-index:2;background:rgba(255,255,255,.12);border:none;border-radius:10px;padding:8px;cursor:pointer;backdrop-filter:blur(4px)}
+.profile-btn svg{display:block}
+
+/* === SHARED COMPONENTS === */
+.search-section{padding:24px 20px 0}
+.search-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px}
+.search-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.hint{display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(0,173,208,.06);border-radius:10px;margin-bottom:20px}
+.hint-text{font-size:11.5px;color:var(--muted);line-height:1.4}
+.loading-wrap{display:none;flex-direction:column;align-items:center;padding:48px 24px;text-align:center}
+.spinner{width:48px;height:48px;border:4px solid rgba(0,84,159,.12);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+.loading-text{font-size:14px;font-weight:600;color:var(--muted)}
+.footer{margin-top:auto;padding:14px 24px 26px;text-align:center}
+.footer-text{font-size:10.5px;color:var(--muted);font-weight:500}
+.brand-line{height:4px;background:linear-gradient(90deg,var(--dark),var(--primary),var(--accent))}
+
+/* No results shared */
+.no-results{display:none;text-align:center;padding:40px 24px}
+.no-results-icon{width:64px;height:64px;border-radius:16px;background:rgba(220,38,38,.06);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.no-results-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px}
+.no-results-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:20px}
+.retry-btn{padding:12px 28px;border:1.5px solid rgba(0,84,159,.15);border-radius:12px;background:var(--card);color:var(--primary);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* Product cards shared */
+.product-list{display:flex;flex-direction:column;gap:10px}
+.product-card{display:flex;gap:14px;padding:14px;background:var(--card);border-radius:14px;box-shadow:0 2px 12px rgba(0,84,159,.06);cursor:pointer;transition:all .2s;border:1px solid rgba(0,84,159,.06)}
+.product-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,84,159,.12)}
+.product-img{width:64px;height:64px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.product-info{flex:1;min-width:0}
+.product-code{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.product-name{font-size:14px;font-weight:700;color:var(--text);margin-top:2px;line-height:1.3}
+.product-cat{font-size:11.5px;color:var(--muted);margin-top:3px}
+.products-section{display:none;padding:0 20px 20px;animation:fadeUp .4s ease-out}
+.products-title{font-size:11.5px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;padding-left:2px}
+.products-count{font-size:12px;font-weight:700;color:var(--primary);background:rgba(0,84,159,.06);padding:4px 10px;border-radius:8px}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);padding:12px 24px;background:var(--success);color:#fff;border-radius:12px;font-size:13px;font-weight:700;box-shadow:0 4px 20px rgba(34,197,94,.3);opacity:0;transition:all .35s ease-out;z-index:100;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* === HOME === */
+.home-subtitle{font-size:15px;font-weight:500;color:rgba(255,255,255,.8);margin-top:6px}
+.home-body{padding:24px 20px}
+.home-section-title{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
+.home-options{display:flex;flex-direction:column;gap:10px}
+.home-opt{display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border-radius:14px;cursor:pointer;border:1.5px solid rgba(0,84,159,.06);transition:all .25s;box-shadow:0 2px 8px rgba(0,84,159,.04)}
+.home-opt:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(0,84,159,.1);transform:translateY(-1px)}
+.home-opt:active{transform:scale(.98)}
+.home-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.home-icon.blue{background:rgba(0,84,159,.06)}
+.home-icon.teal{background:rgba(0,173,208,.06)}
+.home-icon.green{background:rgba(34,197,94,.06)}
+.home-icon.orange{background:rgba(245,158,11,.06)}
+.home-opt-text{flex:1}
+.home-opt-title{font-size:15px;font-weight:700;color:var(--text)}
+.home-opt-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.home-arrow{flex-shrink:0}
+.welcome-bar{display:none;margin:0 20px 12px;padding:12px 16px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.12);border-radius:12px;align-items:center;gap:8px;animation:fadeUp .4s}
+.welcome-dot{width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0}
+.welcome-text{font-size:13px;font-weight:600;color:var(--text)}
+
+/* === LOGIN === */
+.login-card{margin:24px 20px;background:var(--card);border-radius:16px;box-shadow:0 2px 16px rgba(0,84,159,.08);overflow:hidden}
+.login-tabs{display:flex;border-bottom:1.5px solid rgba(0,84,159,.06)}
+.login-tab{flex:1;padding:14px;text-align:center;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.login-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.login-form{padding:20px}
+.login-form.hidden{display:none}
+.l-field{margin-bottom:14px}
+.l-label{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.l-input{width:100%;padding:13px 14px;border:1.5px solid rgba(0,84,159,.1);border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none;background:var(--bg);transition:all .25s}
+.l-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,84,159,.08)}
+.l-input::placeholder{color:#B0BEC5;font-weight:500}
+.l-pass-wrap{position:relative}
+.l-pass-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted)}
+.l-forgot{font-size:12px;color:var(--accent);font-weight:600;text-decoration:none;display:block;text-align:right;margin-bottom:16px}
+.l-submit{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,var(--primary),var(--dark));color:#fff;box-shadow:0 4px 16px rgba(0,84,159,.25);transition:all .25s}
+.l-submit:hover{transform:translateY(-1px)}
+.l-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px;font-weight:600}
+.l-divider::before,.l-divider::after{content:'';flex:1;height:1px;background:rgba(0,84,159,.08)}
+.l-google{width:100%;padding:13px;border:1.5px solid rgba(0,84,159,.1);border-radius:12px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s}
+.l-google:hover{border-color:var(--primary);background:rgba(0,84,159,.02)}
+
+/* === PATENTE === */
+.plate-box{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 2px 16px rgba(0,84,159,.08);margin-bottom:16px}
+.plate-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.plate-input-row{display:flex;gap:10px;align-items:center}
+.plate-input{flex:1;padding:16px;border:2px solid rgba(0,84,159,.12);border-radius:12px;font-size:22px;font-weight:800;font-family:inherit;color:var(--text);text-transform:uppercase;text-align:center;letter-spacing:4px;outline:none;transition:all .25s;background:var(--bg)}
+.plate-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(0,84,159,.1)}
+.plate-input::placeholder{font-size:14px;font-weight:500;letter-spacing:1px;color:#B0BEC5;text-transform:none}
+.search-btn{width:56px;height:56px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--dark));color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 16px rgba(0,84,159,.3);transition:all .25s}
+.search-btn:hover{transform:translateY(-1px)}
+.search-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.vehicle-card{display:none;background:var(--card);border-radius:16px;margin:0 20px 16px;padding:20px;box-shadow:0 2px 16px rgba(0,84,159,.08);animation:fadeUp .4s ease-out}
+.vf-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.vf-dot{width:10px;height:10px;border-radius:50%;background:var(--success)}
+.vf-label{font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.5px}
+.v-brand{font-size:20px;font-weight:900;color:var(--text)}
+.v-model{font-size:15px;font-weight:600;color:var(--primary);margin-top:2px}
+.v-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.v-tag{font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--bg);color:var(--muted)}
+
+/* === VEHICULO === */
+.steps-bar{display:flex;align-items:center;gap:0;margin-bottom:24px;padding:0 4px}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;transition:all .3s;flex-shrink:0}
+.step-dot.pending{background:rgba(0,84,159,.08);color:var(--muted)}
+.step-dot.active{background:var(--primary);color:#fff;box-shadow:0 2px 12px rgba(0,84,159,.3)}
+.step-dot.done{background:var(--success);color:#fff}
+.step-line{flex:1;height:2px;transition:all .3s}
+.step-line.pending{background:rgba(0,84,159,.1)}
+.step-line.done{background:var(--success)}
+.step-labels{display:flex;justify-content:space-between;margin-top:-4px;margin-bottom:20px;padding:0 2px}
+.step-label{font-size:10px;font-weight:600;color:var(--muted);text-align:center;width:60px}
+.step-label.active{color:var(--primary);font-weight:700}
+.step-label.done{color:var(--success)}
+.selector-panel{animation:fadeUp .3s ease-out}
+.selector-title{font-size:11.5px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;padding-left:2px}
+.selector-grid{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding-right:4px}
+.selector-grid::-webkit-scrollbar{width:4px}
+.selector-grid::-webkit-scrollbar-thumb{background:rgba(0,84,159,.15);border-radius:4px}
+.sel-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1.5px solid rgba(0,84,159,.08);border-radius:12px;cursor:pointer;font-family:inherit;text-align:left;transition:all .2s;width:100%}
+.sel-btn:hover{border-color:var(--primary);box-shadow:0 2px 12px rgba(0,84,159,.1)}
+.sel-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,84,159,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sel-text{flex:1;font-size:14.5px;font-weight:700;color:var(--text)}
+.sel-count{font-size:11px;font-weight:600;color:var(--muted);background:var(--bg);padding:3px 8px;border-radius:6px}
+.selected-summary{margin-bottom:16px}
+.sel-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(0,84,159,.06);border-radius:8px;font-size:12px;font-weight:600;color:var(--primary);margin-right:6px;margin-bottom:6px}
+.sel-tag button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;font-weight:700;padding:0 2px}
+
+/* === CODIGO === */
+.code-box{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 2px 16px rgba(0,84,159,.08);margin-bottom:16px}
+.code-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.code-input-row{display:flex;gap:10px;align-items:center}
+.code-prefix{font-size:20px;font-weight:900;color:rgba(0,84,159,.25);padding:0 4px;flex-shrink:0;letter-spacing:1px}
+.code-input{flex:1;padding:16px;border:2px solid rgba(0,84,159,.12);border-radius:12px;font-size:22px;font-weight:800;font-family:inherit;color:var(--text);text-transform:uppercase;text-align:center;letter-spacing:3px;outline:none;transition:all .25s;background:var(--bg)}
+.code-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(0,84,159,.1)}
+.code-input::placeholder{font-size:14px;font-weight:500;letter-spacing:1px;color:#B0BEC5;text-transform:none}
+.quick-section{margin-bottom:20px}
+.quick-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;padding-left:2px}
+.quick-grid{display:flex;flex-wrap:wrap;gap:8px}
+.quick-btn{padding:8px 14px;border:1.5px solid rgba(0,84,159,.1);border-radius:10px;background:var(--card);font-size:12.5px;font-weight:600;color:var(--primary);cursor:pointer;font-family:inherit;transition:all .2s}
+.quick-btn:hover{border-color:var(--primary);background:rgba(0,84,159,.04)}
+.result-card{display:none;margin:0 20px 20px;background:var(--card);border-radius:16px;box-shadow:0 2px 16px rgba(0,84,159,.08);overflow:hidden;animation:fadeUp .4s}
+.result-found{display:flex;align-items:center;gap:10px;padding:14px 18px;background:rgba(34,197,94,.04);border-bottom:1px solid rgba(34,197,94,.1)}
+.result-found-dot{width:10px;height:10px;border-radius:50%;background:var(--success)}
+.result-found-text{font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.5px}
+.result-img{width:100%;height:160px;background:linear-gradient(135deg,#f8fafc,#e8eef5);display:flex;align-items:center;justify-content:center}
+.result-body{padding:18px}
+.result-category{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent);text-transform:uppercase}
+.result-name{font-size:18px;font-weight:900;color:var(--text);margin-top:4px;line-height:1.3}
+.result-code{font-size:16px;font-weight:800;color:var(--primary);margin-top:6px;font-family:'Courier New',monospace;letter-spacing:1px}
+.result-desc{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.rv-tags{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.rv-tag{font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--bg);color:var(--muted)}
+.result-cta{display:block;margin-top:16px;width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,var(--primary),var(--dark));color:#fff;box-shadow:0 4px 16px rgba(0,84,159,.25);transition:all .25s;text-align:center}
+.result-cta:hover{transform:translateY(-1px)}
+
+/* === PALABRA === */
+.word-box{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 16px rgba(0,84,159,.08);margin-bottom:16px}
+.word-input-row{display:flex;gap:10px;align-items:center}
+.word-input{flex:1;padding:14px 0;border:none;font-size:16px;font-weight:600;font-family:inherit;color:var(--text);outline:none;background:transparent}
+.word-input::placeholder{color:#B0BEC5;font-weight:500}
+.clear-btn{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--muted)}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.results-title{font-size:11.5px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+
+/* === PRODUCTO === */
+.prod-hero{background:var(--card);margin:20px 20px 0;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,84,159,.08);animation:fadeUp .4s}
+.prod-img-wrap{width:100%;height:220px;background:linear-gradient(135deg,#f8fafc,#e8eef5);display:flex;align-items:center;justify-content:center;position:relative}
+.img-badge{position:absolute;top:12px;left:12px;font-size:10px;font-weight:700;padding:4px 10px;border-radius:8px;background:var(--primary);color:#fff;letter-spacing:.5px}
+.prod-info{padding:18px 20px}
+.prod-category{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent);text-transform:uppercase}
+.prod-name{font-size:19px;font-weight:900;color:var(--text);margin-top:4px;line-height:1.3}
+.prod-code-row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.prod-code{font-size:15px;font-weight:800;color:var(--primary);letter-spacing:1px;font-family:'Courier New',monospace}
+.prod-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:rgba(34,197,94,.1);color:var(--success)}
+.p-section{margin:12px 20px;background:var(--card);border-radius:14px;box-shadow:0 2px 12px rgba(0,84,159,.06);overflow:hidden}
+.p-section-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer}
+.p-section-title{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.p-section-toggle{transition:transform .25s}
+.p-section-toggle.open{transform:rotate(180deg)}
+.p-section-body{padding:0 16px 16px}
+.attr-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.attr-item{padding:10px 12px;background:var(--bg);border-radius:10px}
+.attr-label{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+.attr-value{font-size:13.5px;font-weight:700;color:var(--text);margin-top:2px}
+.desc-text{font-size:13px;color:var(--muted);line-height:1.6}
+.vh-list{display:flex;flex-direction:column;gap:8px}
+.vh-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px}
+.vh-icon{width:32px;height:32px;border-radius:8px;background:rgba(0,84,159,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vh-name{font-size:13px;font-weight:700;color:var(--text)}
+.vh-years{font-size:11px;color:var(--muted);margin-top:1px}
+.cross-list{display:flex;flex-wrap:wrap;gap:8px}
+.cross-tag{font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;background:var(--bg);color:var(--muted)}
+.cross-tag strong{color:var(--text)}
+.cta-bar{position:sticky;bottom:0;padding:16px 20px 24px;background:linear-gradient(to top,var(--bg) 80%,transparent);display:flex;gap:10px;z-index:10}
+.cta-btn{flex:1;padding:16px;border:none;border-radius:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.cta-btn:hover{transform:translateY(-1px)}
+.cta-whatsapp{background:var(--whatsapp);color:#fff}
+.cta-ml{background:var(--ml);color:#333}
+.footer-spacer{height:100px}
+
+/* === PERFIL === */
+.profile-top{display:flex;flex-direction:column;align-items:center;margin-top:-32px;position:relative;z-index:2;padding:0 20px}
+.avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;border:4px solid var(--bg);box-shadow:0 4px 16px rgba(0,84,159,.2)}
+.prof-name{font-size:18px;font-weight:800;color:var(--text);margin-top:10px}
+.prof-email{font-size:13px;color:var(--muted);margin-top:2px}
+.progress-wrap{margin:20px 20px 0;padding:16px;background:var(--card);border-radius:14px;box-shadow:0 2px 12px rgba(0,84,159,.06)}
+.progress-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.progress-label{font-size:12px;font-weight:700;color:var(--text)}
+.progress-pct{font-size:12px;font-weight:800;color:var(--primary)}
+.progress-bar{height:8px;border-radius:8px;background:rgba(0,84,159,.08);overflow:hidden}
+.progress-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .6s}
+.progress-hint{font-size:11px;color:var(--muted);margin-top:8px}
+.prof-section{margin:14px 20px;background:var(--card);border-radius:14px;box-shadow:0 2px 12px rgba(0,84,159,.06);overflow:hidden}
+.prof-section-head{display:flex;align-items:center;gap:10px;padding:16px;cursor:pointer}
+.prof-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.prof-icon.green{background:rgba(34,197,94,.08)}
+.prof-icon.blue{background:rgba(0,84,159,.06)}
+.prof-icon.orange{background:rgba(245,158,11,.08)}
+.prof-head-text{flex:1}
+.prof-title{font-size:13px;font-weight:700;color:var(--text)}
+.prof-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.prof-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;flex-shrink:0}
+.badge-done{background:rgba(34,197,94,.1);color:var(--success)}
+.badge-pending{background:rgba(245,158,11,.08);color:var(--warning)}
+.prof-body{padding:0 16px 16px;display:none}
+.pf{margin-bottom:14px}
+.pf:last-child{margin-bottom:0}
+.pf-label{font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.pf-input{width:100%;padding:12px 14px;border:1.5px solid rgba(0,84,159,.1);border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;color:var(--text);outline:none;background:var(--bg);transition:all .25s}
+.pf-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,84,159,.08)}
+.pf-input::placeholder{color:#B0BEC5;font-weight:500}
+select.pf-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A6175' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pf-hint{font-size:10.5px;color:var(--muted);margin-top:4px}
+.pf-save{width:100%;padding:13px;border:none;border-radius:11px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:4px;background:linear-gradient(135deg,var(--primary),var(--dark));color:#fff;box-shadow:0 4px 16px rgba(0,84,159,.2);transition:all .25s}
+.pf-save:hover{transform:translateY(-1px)}
+.incentive{margin:14px 20px;background:linear-gradient(135deg,rgba(0,173,208,.06),rgba(0,84,159,.06));border:1.5px solid rgba(0,173,208,.15);border-radius:14px;padding:16px;display:flex;gap:12px;align-items:flex-start}
+.incentive-icon{width:36px;height:36px;border-radius:10px;background:rgba(0,173,208,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.incentive-title{font-size:13px;font-weight:700;color:var(--text)}
+.incentive-list{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.6}
+.logout-section{margin:14px 20px 30px;text-align:center}
+.logout-btn{padding:14px 32px;border:1.5px solid rgba(220,38,38,.15);border-radius:12px;background:var(--card);font-size:14px;font-weight:700;color:#DC2626;cursor:pointer;font-family:inherit;transition:all .2s;width:100%}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== HOME ===== -->
+<div class="screen active" id="screen-home">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="profile-btn" onclick="nav('perfil')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></button>
+    <div class="header-content">
+      <img class="logo-img" src="data:image/png;base64,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" alt="Griffo">
+      <div class="header-slogan">Impulsamos Soluciones</div>
+      <div class="home-subtitle">Buscador de productos</div>
+    </div>
+  </div>
+  <div class="welcome-bar" id="welcome-bar"><div class="welcome-dot"></div><span class="welcome-text" id="welcome-text"></span></div>
+  <div class="home-body">
+    <div class="home-section-title">¿Cómo querés buscar?</div>
+    <div class="home-options">
+      <div class="home-opt" onclick="tryNav('patente')">
+        <div class="home-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 10v4M9 12h6"/></svg></div>
+        <div class="home-opt-text"><div class="home-opt-title">Por Patente</div><div class="home-opt-desc">Requiere señal o WiFi</div></div>
+        <svg class="home-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0CDD8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="home-opt" onclick="tryNav('vehiculo')">
+        <div class="home-icon teal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ADD0" stroke-width="2"><path d="M5 17h14M6 17l1.5-5.5h9L18 17M7.5 11.5L8.5 8h7l1 3.5"/></svg></div>
+        <div class="home-opt-text"><div class="home-opt-title">Por Vehículo</div><div class="home-opt-desc">Marca, modelo y año</div></div>
+        <svg class="home-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0CDD8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="home-opt" onclick="tryNav('codigo')">
+        <div class="home-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+        <div class="home-opt-text"><div class="home-opt-title">Por Código</div><div class="home-opt-desc">Código GRIFFO del producto</div></div>
+        <svg class="home-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0CDD8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="home-opt" onclick="tryNav('palabra')">
+        <div class="home-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="home-opt-text"><div class="home-opt-title">Por Palabra</div><div class="home-opt-desc">Buscá lo que necesites</div></div>
+        <svg class="home-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0CDD8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div class="footer-text">GRIFFO SRL · Industria Argentina · griffo.com.ar</div></div>
+  <div class="brand-line"></div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div class="screen" id="screen-login">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="back-btn" onclick="nav('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="header-content">
+      <img class="logo-img" src="data:image/png;base64,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" alt="Griffo">
+      <div class="header-slogan">Impulsamos Soluciones</div>
+    </div>
+  </div>
+  <div class="login-card">
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchTab('login')">Ingresar</button>
+      <button class="login-tab" onclick="switchTab('register')">Crear cuenta</button>
+    </div>
+    <div class="login-form" id="form-login">
+      <div class="l-field"><div class="l-label">Email</div><input class="l-input" type="email" id="login-email" placeholder="tu@email.com"></div>
+      <div class="l-field"><div class="l-label">Contraseña</div><div class="l-pass-wrap"><input class="l-input" type="password" id="login-pass" placeholder="••••••••"><button class="l-pass-toggle" onclick="togglePass('login-pass',this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <a class="l-forgot" href="#" onclick="showToast('→ Se enviaría email de recuperación');return false">¿Olvidaste tu contraseña?</a>
+      <button class="l-submit" onclick="doLogin()">Ingresar</button>
+      <div class="l-divider">o</div>
+      <button class="l-google" onclick="doLogin()"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continuar con Google</button>
+    </div>
+    <div class="login-form hidden" id="form-register">
+      <div class="l-field"><div class="l-label">Nombre completo</div><input class="l-input" type="text" id="reg-name" placeholder="Tu nombre"></div>
+      <div class="l-field"><div class="l-label">Email</div><input class="l-input" type="email" id="reg-email" placeholder="tu@email.com"></div>
+      <div class="l-field"><div class="l-label">Contraseña</div><div class="l-pass-wrap"><input class="l-input" type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"><button class="l-pass-toggle" onclick="togglePass('reg-pass',this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <button class="l-submit" onclick="doRegister()" style="margin-top:8px">Crear cuenta</button>
+      <div class="l-divider">o</div>
+      <button class="l-google" onclick="doRegister()"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Registrarse con Google</button>
+    </div>
+  </div>
+  <div class="footer"><div class="footer-text">GRIFFO SRL · Industria Argentina · griffo.com.ar</div></div>
+  <div class="brand-line"></div>
+</div>
+
+<!-- ===== PATENTE ===== -->
+<div class="screen" id="screen-patente">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="back-btn" onclick="nav('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="header-content"><img class="logo-img" src="data:image/png;base64,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" alt="Griffo"><div class="header-slogan">Impulsamos Soluciones</div></div>
+  </div>
+  <div class="search-section" id="pat-search">
+    <div class="search-title">Buscar por Patente</div>
+    <div class="search-sub">Encontrá los repuestos para tu vehículo</div>
+    <div class="plate-box"><div class="plate-label">Patente del vehículo</div><div class="plate-input-row"><input class="plate-input" type="text" id="pat-input" placeholder="Ej: AB123CD" maxlength="10" oninput="this.value=this.value.toUpperCase()"><button class="search-btn" id="pat-btn" onclick="searchPatente()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button></div></div>
+    <div class="hint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ADD0" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="hint-text">Ingresá la patente sin espacios ni guiones. Formato viejo (ABC123) o nuevo (AB123CD).</span></div>
+  </div>
+  <div class="loading-wrap" id="pat-loading"><div class="spinner"></div><div class="loading-text">Consultando patente...</div></div>
+  <div class="vehicle-card" id="pat-vehicle"><div class="vf-row"><div class="vf-dot"></div><span class="vf-label">Vehículo identificado</span></div><div class="v-brand" id="pv-brand"></div><div class="v-model" id="pv-model"></div><div class="v-tags" id="pv-tags"></div></div>
+  <div class="products-section" id="pat-products"><div class="products-title">Productos GRIFFO disponibles</div><div class="product-list" id="pat-list"></div></div>
+  <div class="no-results" id="pat-noresults"><div class="no-results-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div class="no-results-title">Patente no encontrada</div><div class="no-results-desc">Verificá la patente o probá buscando por vehículo.</div><button class="retry-btn" onclick="resetPatente()">Intentar otra patente</button></div>
+  <div class="footer"><div class="footer-text">GRIFFO SRL · Industria Argentina · griffo.com.ar</div></div>
+  <div class="brand-line"></div>
+</div>
+
+<!-- ===== VEHICULO ===== -->
+<div class="screen" id="screen-vehiculo">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="back-btn" onclick="nav('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="header-content"><img class="logo-img" src="data:image/png;base64,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" alt="Griffo"><div class="header-slogan">Impulsamos Soluciones</div></div>
+  </div>
+  <div class="search-section" id="veh-search">
+    <div class="search-title">Buscar por Vehículo</div>
+    <div class="search-sub">Seleccioná marca, modelo y año</div>
+    <div class="steps-bar"><div class="step-dot active" id="sd1">1</div><div class="step-line pending" id="sl1"></div><div class="step-dot pending" id="sd2">2</div><div class="step-line pending" id="sl2"></div><div class="step-dot pending" id="sd3">3</div></div>
+    <div class="step-labels"><div class="step-label active" id="slb1">Marca</div><div class="step-label" id="slb2">Modelo</div><div class="step-label" id="slb3">Año</div></div>
+    <div class="selected-summary" id="veh-summary"></div>
+    <div id="panel-marca" class="selector-panel"><div class="selector-title">Elegí la marca</div><div class="selector-grid" id="grid-marca"></div></div>
+    <div id="panel-modelo" class="selector-panel" style="display:none"><div class="selector-title">Elegí el modelo</div><div class="selector-grid" id="grid-modelo"></div></div>
+    <div id="panel-anio" class="selector-panel" style="display:none"><div class="selector-title">Elegí el año</div><div class="selector-grid" id="grid-anio"></div></div>
+  </div>
+  <div class="loading-wrap" id="veh-loading"><div class="spinner"></div><div class="loading-text">Buscando productos...</div></div>
+  <div class="products-section" id="veh-products"><div class="vehicle-card" style="display:block;margin:0 0 16px;position:relative"><div class="vf-row"><div class="vf-dot"></div><span class="vf-label">Vehículo seleccionado</span></div><div class="v-brand" id="vv-brand"></div><div class="v-model" id="vv-model"></div></div><div class="products-title">Productos GRIFFO disponibles</div><div class="product-list" id="veh-list"></div></div>
+  <div class="footer"><div class="footer-text">GRIFFO SRL · Industria Argentina · griffo.com.ar</div></div>
+  <div class="brand-line"></div>
+</div>
+
+<!-- ===== CODIGO ===== -->
+<div class="screen" id="screen-codigo">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="back-btn" onclick="nav('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="header-content"><img class="logo-img" src="data:image/png;base64,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" alt="Griffo"><div class="header-slogan">Impulsamos Soluciones</div></div>
+  </div>
+  <div class="search-section" id="cod-search">
+    <div class="search-title">Buscar por Código</div>
+    <div class="search-sub">Ingresá el código GRIFFO del producto</div>
+    <div class="code-box"><div class="code-label">Código del producto</div><div class="code-input-row"><span class="code-prefix">GR-</span><input class="code-input" type="text" id="cod-input" placeholder="Ej: 2035" maxlength="10" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"><button class="search-btn" id="cod-btn" onclick="searchCodigo()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button></div></div>
+    <div class="hint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ADD0" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="hint-text">Ingresá solo el número. El prefijo GR- se agrega automáticamente.</span></div>
+    <div class="quick-section"><div class="quick-label">Códigos frecuentes</div><div class="quick-grid"><button class="quick-btn" onclick="quickCodigo('2035')">GR-2035</button><button class="quick-btn" onclick="quickCodigo('2135')">GR-2135</button><button class="quick-btn" onclick="quickCodigo('3035')">GR-3035</button><button class="quick-btn" onclick="quickCodigo('3135')">GR-3135</button><button class="quick-btn" onclick="quickCodigo('4035')">GR-4035</button></div></div>
+  </div>
+  <div class="loading-wrap" id="cod-loading"><div class="spinner"></div><div class="loading-text">Buscando producto...</div></div>
+  <div class="result-card" id="cod-result"><div class="result-found"><div class="result-found-dot"></div><span class="result-found-text">Producto encontrado</span></div><div class="result-img"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#B0BEC5" stroke-width="1" opacity=".4"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M6 21v-1a6 6 0 0112 0v1"/></svg></div><div class="result-body"><div class="result-category" id="cr-cat"></div><div class="result-name" id="cr-name"></div><div class="result-code" id="cr-code"></div><div class="result-desc" id="cr-desc"></div><div class="rv-tags" id="cr-vehicles"></div><button class="result-cta" onclick="openProduct()">Ver ficha completa →</button></div></div>
+  <div class="no-results" id="cod-noresults"><div class="no-results-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div class="no-results-title">Código no encontrado</div><div class="no-results-desc">Verificá el código o probá buscando por palabra.</div><button class="retry-btn" onclick="resetCodigo()">Intentar otro código</button></div>
+  <div class="footer"><div class="footer-text">GRIFFO SRL · Industria Argentina · griffo.com.ar</div></div>
+  <div class="brand-line"></div>
+</div>
+
+<!-- ===== PALABRA ===== -->
+<div class="screen" id="screen-palabra">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="back-btn" onclick="nav('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="header-content"><img class="logo-img" src="data:image/png;base64,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" alt="Griffo"><div class="header-slogan">Impulsamos Soluciones</div></div>
+  </div>
+  <div class="search-section" id="pal-search">
+    <div class="search-title">Buscar por Palabra</div>
+    <div class="search-sub">Escribí lo que necesitás encontrar</div>
+    <div class="word-box"><div class="word-input-row"><div style="padding:0 4px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B0BEC5" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><input class="word-input" type="text" id="pal-input" placeholder="Ej: fuelle delantero vento"><button class="clear-btn" id="pal-clear" onclick="clearPalabra()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></div>
+    <div class="quick-section" id="pal-quick"><div class="quick-label">Búsquedas frecuentes</div><div class="quick-grid"><button class="quick-btn" onclick="quickPalabra('fuelle delantero')">Fuelle delantero</button><button class="quick-btn" onclick="quickPalabra('tope trasero')">Tope trasero</button><button class="quick-btn" onclick="quickPalabra('kit amortiguador')">Kit amortiguador</button><button class="quick-btn" onclick="quickPalabra('corolla')">Corolla</button><button class="quick-btn" onclick="quickPalabra('vento')">Vento</button><button class="quick-btn" onclick="quickPalabra('hilux')">Hilux</button><button class="quick-btn" onclick="quickPalabra('ecosport')">EcoSport</button><button class="quick-btn" onclick="quickPalabra('duster')">Duster</button></div></div>
+  </div>
+  <div class="loading-wrap" id="pal-loading"><div class="spinner"></div><div class="loading-text">Buscando...</div></div>
+  <div class="products-section" id="pal-results"><div class="results-header"><span class="results-title">Resultados</span><span class="products-count" id="pal-count"></span></div><div class="product-list" id="pal-list"></div></div>
+  <div class="no-results" id="pal-noresults"><div class="no-results-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div class="no-results-title">Sin resultados</div><div class="no-results-desc">Probá con otras palabras o buscá por patente o vehículo.</div><button class="retry-btn" onclick="clearPalabra()">Nueva búsqueda</button></div>
+  <div class="footer"><div class="footer-text">GRIFFO SRL · Industria Argentina · griffo.com.ar</div></div>
+  <div class="brand-line"></div>
+</div>
+
+<!-- ===== PRODUCTO ===== -->
+<div class="screen" id="screen-producto">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="back-btn" onclick="goBackFromProduct()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="header-content"><img class="logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADJCAQAAAC3KXd8AAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAD/h4/MvwAAAAd0SU1FB+oCBRc4KXpRoHQAAAVUSURBVHja7Z3dlqIwEAbDnn3/V2ZvdHVGIQHSf8VXV3MUnO4uEkKCuKxNkPkTHYCwRYLhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXD+RgeQkuM/RbNEh7wZmH5Wp7V2RukeiXTfWbB96glE30+wf8Khmu8jODrRIM13EJwnxQDJZME5U3OWzBScPSlHyTTBddJxkswRXC8RF8UEwXVTcFBcXXDx8O0VVxZcOPQfmEquudhAUetAvRZcLuABDNtwLcGlgj2EmeI6gssEehIjxTXOwXS5huRvwekDnIZJG87dgu8j14y8giV3ClnvqryjXpOcM7bgO8o1I5/gOL3vg5y1u0WRAzHXKDoqmO/j17W7RYHbbTO1YEu9z9KtO+/19/aMeBJZBNuWajnx3jq0d3pyjKL99C477/X39ox6EvEtOLJMxeWNEC3Yu5DrwfeWA/unJLaL9inX+uWvc7GU0xvbgv3KNXJVmyneicS14JLlqkdMC+7LXQa3s+X4BdJyIWaTy7GImay9f7lsbv85TfhtanFkqzmF7F8nHy0tZD14O+1l8/WxUo2NeOfq3Z9Cie6Bmr/grZT3y95XtwzuOTOLsUmSUclG82W+g6xzerMxs6M3x1PwPfWObWlWA78u+sj5aGSif29os7f8911Qfxart3g4clYOIHqqslfqbV2fjM1YPbfoL++Ps/76+2fE/cGW4UHh1UWPds/nS207Yt1rv+vu1sH4CB5NeB16dR3e06O7vC7TNEoPwdf02nC+qLPvyzI+CO0FH523mv0/znIttjSddI47Oo5zvPzriXcy5nEQa8FpjmTn7IKvfl9UbcG+FD5MbQXPKUxvWHN8hmxWy7n2OS5TIpaCLfTWYGSk7ZRXpi7aMmXPtdmRfd0OWzvBZ9rv513Ly9B23nHuRXJ8ltuU2Lno9YvSYstxP9Z804ydX8QvNlwtgP0i5O/lj36r3YvO+cC16qKtpidnDNyulng8hnC9uQZZNBLozSB47bw7o0yzx9Br9xPnxD0Bm3PwsYJuLep7DLaurT/3vzj+AvWjHNdu/l4/XpnxyZEEXhFkG0X3OuyKhF7wxZ+D6QRfz0cKXtpzrsp+WSAqw/D44wS/xHL1JiBLF70MvFbrDJxCb+woetncb+/G8gokkdtatlF0osJQssgleJsq7TeV3NbsvgB+tpO+8mnRpJPbWvQga+zJNtJ7geguev/LZTXUppXbmuUzOs59cIrHHhyMODXRLfg3tfQml9ua7VN2ask6SgG5reVrwTUoIrc16+dkEdtwIbmt2T8IjaW4mNzWPJ50R1FcUG5rPo8yrK64qNpH8C7Vr6u4tNzW/B5GWk9xebWPNBwrX0UyRO0jGdeqZ1eMUvtIyb3mOSUD1T4SC6l3JslYtY/0wmodLRku9n+awXX2//c3Efs/3eiG9MA6jJtpfUs8ieAnM8O5rdR3sgl+J8WvllQns2AxgSxfXRFGSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4LhSDAcCYYjwXAkGI4Ew5FgOBIMR4Lh/APXkuVymJVW4AAAAABJRU5ErkJggg==" alt="Griffo"><div class="header-slogan">Impulsamos Soluciones</div></div>
+  </div>
+  <div class="prod-hero"><div class="prod-img-wrap"><span class="img-badge">SUSPENSIÓN</span><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#B0BEC5" stroke-width="1" opacity=".4"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M6 21v-1a6 6 0 0112 0v1"/></svg></div><div class="prod-info"><div class="prod-category" id="pp-cat">Suspensión · Fuelle de Amortiguador</div><div class="prod-name" id="pp-name">Kit Fuelle de Amortiguador Delantero</div><div class="prod-code-row"><div class="prod-code" id="pp-code">GR-2035</div><div class="prod-status">Disponible</div></div></div></div>
+
+  <div class="p-section" style="animation:fadeUp .4s .1s both"><div class="p-section-head" onclick="togglePSection(this)"><span class="p-section-title">Descripción</span><svg class="p-section-toggle open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6175" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="p-section-body"><p class="desc-text">Kit completo de fuelle de amortiguador. Incluye fuelle, abrazaderas, seguro, tuerca y Molykote. Material: Thermoplastic Urethane de alta resistencia.</p></div></div>
+  <div class="p-section" style="animation:fadeUp .4s .15s both"><div class="p-section-head" onclick="togglePSection(this)"><span class="p-section-title">Datos Técnicos</span><svg class="p-section-toggle open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6175" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="p-section-body"><div class="attr-grid"><div class="attr-item"><div class="attr-label">Material</div><div class="attr-value">TPU</div></div><div class="attr-item"><div class="attr-label">Posición</div><div class="attr-value">Delantero</div></div><div class="attr-item"><div class="attr-label">Diámetro Sup.</div><div class="attr-value">55 mm</div></div><div class="attr-item"><div class="attr-label">Largo</div><div class="attr-value">91 mm</div></div><div class="attr-item"><div class="attr-label">Lado</div><div class="attr-value">Ambos</div></div><div class="attr-item"><div class="attr-label">Contenido</div><div class="attr-value">Kit completo</div></div></div></div></div>
+  <div class="p-section" style="animation:fadeUp .4s .2s both"><div class="p-section-head" onclick="togglePSection(this)"><span class="p-section-title">Vehículos Compatibles</span><svg class="p-section-toggle open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6175" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="p-section-body"><div class="vh-list"><div class="vh-item"><div class="vh-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><path d="M5 17h14M6 17l1.5-5.5h9L18 17M7.5 11.5L8.5 8h7l1 3.5"/></svg></div><div><div class="vh-name">Volkswagen Vento</div><div class="vh-years">2.0 TSI · 2015 - 2024</div></div></div><div class="vh-item"><div class="vh-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><path d="M5 17h14M6 17l1.5-5.5h9L18 17M7.5 11.5L8.5 8h7l1 3.5"/></svg></div><div><div class="vh-name">Volkswagen Golf VII</div><div class="vh-years">1.4 TSI / 2.0 TSI · 2013 - 2020</div></div></div><div class="vh-item"><div class="vh-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><path d="M5 17h14M6 17l1.5-5.5h9L18 17M7.5 11.5L8.5 8h7l1 3.5"/></svg></div><div><div class="vh-name">Audi A3</div><div class="vh-years">1.4 / 2.0 TFSI · 2013 - 2020</div></div></div></div></div></div>
+  <div class="p-section" style="animation:fadeUp .4s .25s both"><div class="p-section-head" onclick="togglePSection(this)"><span class="p-section-title">Equivalencias</span><svg class="p-section-toggle" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A6175" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="p-section-body" style="display:none"><div class="cross-list"><div class="cross-tag"><strong>Monroe:</strong> K6001</div><div class="cross-tag"><strong>Sachs:</strong> 900 185</div><div class="cross-tag"><strong>SKF:</strong> VKDP 33610</div></div></div></div>
+
+  <div class="footer-spacer"></div>
+  <div class="cta-bar"><button class="cta-btn cta-whatsapp" onclick="sendWhatsApp()"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>Consultar</button><button class="cta-btn cta-ml" onclick="showToast('→ Abre publicación en MercadoLibre')"><svg width="20" height="20" viewBox="0 0 24 24" fill="#333"><circle cx="12" cy="12" r="10"/></svg>Comprar en ML</button></div>
+  <div class="brand-line"></div>
+</div>
+
+<!-- ===== PERFIL ===== -->
+<div class="screen" id="screen-perfil">
+  <div class="header">
+    <div class="oval o1"></div><div class="oval o2"></div>
+    <button class="back-btn" onclick="nav('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="header-content"><img class="logo-img" src="data:image/png;base64,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" alt="Griffo"><div class="header-slogan">Impulsamos Soluciones</div></div>
+  </div>
+  <div class="profile-top"><div class="avatar" id="prof-avatar">JG</div><div class="prof-name" id="prof-fullname">José García</div><div class="prof-email" id="prof-fullemail">jose@email.com</div></div>
+  <div class="progress-wrap"><div class="progress-header"><span class="progress-label">Perfil completado</span><span class="progress-pct" id="prof-pct">33%</span></div><div class="progress-bar"><div class="progress-fill" id="prof-fill" style="width:33%"></div></div><div class="progress-hint" id="prof-hint">Completá tu perfil para acceder a todos los beneficios</div></div>
+  
+  <div class="prof-section"><div class="prof-section-head" onclick="toggleProfSection(this)"><div class="prof-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="prof-head-text"><div class="prof-title">Datos personales</div><div class="prof-sub">Nombre, email</div></div><span class="prof-badge badge-done">✓ Completo</span></div><div class="prof-body"><div class="pf"><div class="pf-label">Nombre</div><input class="pf-input" type="text" id="pf-name" value="José García"></div><div class="pf"><div class="pf-label">Email</div><input class="pf-input" type="email" value="jose@email.com" readonly style="opacity:.6"></div><button class="pf-save" onclick="saveProfSection(1)">Guardar cambios</button></div></div>
+
+  <div class="prof-section"><div class="prof-section-head" onclick="toggleProfSection(this)"><div class="prof-icon orange"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div><div class="prof-head-text"><div class="prof-title">WhatsApp y ubicación</div><div class="prof-sub">Para consultas a tu proveedor</div></div><span class="prof-badge badge-pending" id="pbadge2">Pendiente</span></div><div class="prof-body" id="pbody2"><div class="pf"><div class="pf-label">WhatsApp de tu proveedor</div><input class="pf-input" type="tel" placeholder="+54 9 11 1234-5678" id="pf-wpp"></div><div class="pf-row"><div class="pf"><div class="pf-label">Provincia</div><select class="pf-input" id="pf-prov"><option value="">Seleccioná</option><option>Buenos Aires</option><option>CABA</option><option>Córdoba</option><option>Santa Fe</option><option>Mendoza</option><option>Tucumán</option></select></div><div class="pf"><div class="pf-label">Localidad</div><input class="pf-input" type="text" placeholder="Tu ciudad" id="pf-loc"></div></div><button class="pf-save" onclick="saveProfSection(2)">Guardar</button></div></div>
+
+  <div class="incentive" id="prof-incentive"><div class="incentive-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ADD0" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div><div class="incentive-title">Completá tu perfil y accedé a:</div><div class="incentive-list">★ Promociones exclusivas<br>★ Novedades de productos<br>★ Soporte prioritario</div></div></div>
+
+  <div class="prof-section"><div class="prof-section-head" onclick="toggleProfSection(this)"><div class="prof-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div><div class="prof-head-text"><div class="prof-title">Datos de tu negocio</div><div class="prof-sub">Opcional · Beneficios exclusivos</div></div><span class="prof-badge badge-pending" id="pbadge3">Opcional</span></div><div class="prof-body" id="pbody3"><div class="pf"><div class="pf-label">Empresa</div><input class="pf-input" type="text" placeholder="Tu empresa" id="pf-empresa"></div><div class="pf"><div class="pf-label">Rubro</div><select class="pf-input" id="pf-rubro"><option value="">Seleccioná</option><option>Autopartista</option><option>Taller mecánico</option><option>Lubricentro</option><option>Casa de repuestos</option><option>Distribuidor</option><option>Otro</option></select></div><div class="pf"><div class="pf-label">¿Comprás GRIFFO?</div><select class="pf-input" id="pf-compra"><option value="">Seleccioná</option><option>Sí, regularmente</option><option>Sí, a veces</option><option>No, pero me interesa</option><option>No</option></select></div><div class="pf"><div class="pf-label">Proveedor actual</div><input class="pf-input" type="text" placeholder="¿Dónde comprás hoy?" id="pf-proveedor"></div><div class="pf"><div class="pf-label">Empleados</div><select class="pf-input" id="pf-empleados"><option value="">Seleccioná</option><option>Solo yo</option><option>2-5</option><option>6-15</option><option>16-50</option><option>Más de 50</option></select></div><button class="pf-save" onclick="saveProfSection(3)">Guardar datos del negocio</button></div></div>
+
+  <div class="logout-section"><button class="logout-btn" onclick="doLogout()">Cerrar sesión</button></div>
+  <div class="footer"><div class="footer-text">GRIFFO SRL · Industria Argentina · griffo.com.ar</div></div>
+  <div class="brand-line"></div>
+</div>
+
+</div><!-- end .app -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== GRIFFO APP - PRODUCCIÓN =====
+// Llama a las API routes del backend Vercel (/api/*)
+
+var state = { loggedIn:false, userName:'', pendingNav:null, lastSearch:null, currentProduct:null };
+var carSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><path d="M5 17h14M6 17l1.5-5.5h9L18 17M7.5 11.5L8.5 8h7l1 3.5"/></svg>';
+var imgSvg = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.2" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M6 21v-1a6 6 0 0112 0v1"/></svg>';
+
+// ===== API HELPER =====
+async function api(endpoint, params) {
+  var qs = params ? '?' + new URLSearchParams(params).toString() : '';
+  try {
+    var resp = await fetch('/api/' + endpoint + qs);
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Error ' + resp.status);
+    return data;
+  } catch (e) {
+    console.error('API Error:', endpoint, e);
+    throw e;
+  }
+}
+
+// Cache para vehículos (evitar llamadas repetidas)
+var vehCache = { brands:null, models:{}, years:{} };
+
+// ===== NAVIGATION =====
+function nav(screen) {
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById('screen-'+screen).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function tryNav(screen) {
+  if (!state.loggedIn) { state.pendingNav = screen; nav('login'); return; }
+  nav(screen);
+}
+
+// ===== LOGIN =====
+function switchTab(tab) {
+  document.querySelectorAll('.login-tab').forEach(function(t){t.classList.remove('active')});
+  document.getElementById('form-login').classList.toggle('hidden', tab!=='login');
+  document.getElementById('form-register').classList.toggle('hidden', tab!=='register');
+  event.target.classList.add('active');
+}
+
+function togglePass(id, btn) {
+  var inp = document.getElementById(id);
+  inp.type = inp.type==='password'?'text':'password';
+}
+
+function doLogin() {
+  var email = document.getElementById('login-email').value || 'usuario@demo.com';
+  state.loggedIn = true;
+  state.userName = email.split('@')[0].replace(/\./g,' ').replace(/\b\w/g,function(l){return l.toUpperCase()});
+  showWelcome();
+  if (state.pendingNav) { var dest = state.pendingNav; state.pendingNav = null; nav(dest); }
+  else nav('home');
+}
+
+function doRegister() {
+  var name = document.getElementById('reg-name').value || 'Usuario Demo';
+  state.loggedIn = true;
+  state.userName = name;
+  updateProfile(name, document.getElementById('reg-email').value || 'demo@email.com');
+  showWelcome();
+  if (state.pendingNav) { var dest = state.pendingNav; state.pendingNav = null; nav(dest); }
+  else nav('home');
+}
+
+function showWelcome() {
+  var bar = document.getElementById('welcome-bar');
+  bar.style.display = 'flex';
+  document.getElementById('welcome-text').textContent = 'Hola, ' + state.userName;
+}
+
+function doLogout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  state.loggedIn = false; state.userName = '';
+  document.getElementById('welcome-bar').style.display = 'none';
+  nav('home');
+}
+
+function updateProfile(name, email) {
+  var initials = name.split(' ').map(function(w){return w[0]}).join('').toUpperCase().substring(0,2);
+  document.getElementById('prof-avatar').textContent = initials;
+  document.getElementById('prof-fullname').textContent = name;
+  document.getElementById('prof-fullemail').textContent = email;
+}
+
+// ===== PATENTE (API REAL) =====
+async function searchPatente() {
+  var plate = document.getElementById('pat-input').value.replace(/[\s-]/g,'').toUpperCase();
+  if (!plate || plate.length < 6) return;
+  hide('pat-vehicle'); hide('pat-products'); hide('pat-noresults');
+  show('pat-loading'); document.getElementById('pat-btn').disabled = true;
+  try {
+    var data = await api('patent', { plate: plate });
+    hide('pat-loading'); document.getElementById('pat-btn').disabled = false;
+    var v = data.vehicle;
+    document.getElementById('pv-brand').textContent = v.brand;
+    document.getElementById('pv-model').textContent = v.model + (v.version ? ' ' + v.version : '');
+    var tags = [v.year, v.engine, v.transmission, v.segment].filter(Boolean);
+    document.getElementById('pv-tags').innerHTML = tags.map(function(t){return '<span class="v-tag">'+t+'</span>'}).join('');
+    show('pat-vehicle');
+    if (data.products && data.products.length > 0) {
+      renderRealProductList('pat-list', data.products);
+      show('pat-products');
+    }
+  } catch (e) {
+    hide('pat-loading'); document.getElementById('pat-btn').disabled = false;
+    show('pat-noresults');
+  }
+}
+
+function resetPatente() { document.getElementById('pat-input').value=''; hide('pat-noresults'); hide('pat-vehicle'); hide('pat-products'); document.getElementById('pat-input').focus(); }
+document.getElementById('pat-input').addEventListener('keydown',function(e){if(e.key==='Enter')searchPatente()});
+
+// ===== VEHICULO (API REAL) =====
+var vehSel = {marca:null, modelo:null, anio:null, vehicle_id:null};
+
+async function initVehiculo() {
+  var grid = document.getElementById('grid-marca');
+  grid.innerHTML = '<div style="padding:20px;text-align:center;color:#4A6175;font-size:13px">Cargando marcas...</div>';
+  try {
+    if (!vehCache.brands) {
+      var data = await api('vehicles');
+      vehCache.brands = data.data;
+    }
+    grid.innerHTML = '';
+    vehCache.brands.forEach(function(b){
+      grid.innerHTML += '<button class="sel-btn" onclick="pickMarca(\''+b.name.replace(/'/g,"\\'")+'\')"><div class="sel-icon">'+carSvg+'</div><span class="sel-text">'+b.name+'</span><span class="sel-count">'+b.count+' modelos</span></button>';
+    });
+  } catch(e) {
+    grid.innerHTML = '<div style="padding:20px;text-align:center;color:#DC2626;font-size:13px">Error al cargar marcas. <button onclick="initVehiculo()" style="color:#00549F;font-weight:700;border:none;background:none;cursor:pointer;font-family:inherit">Reintentar</button></div>';
+  }
+}
+
+async function pickMarca(m) {
+  vehSel = {marca:m, modelo:null, anio:null, vehicle_id:null};
+  updateVehSteps(2); updateVehSummary();
+  hide('panel-marca'); show('panel-modelo');
+  var grid = document.getElementById('grid-modelo');
+  grid.innerHTML = '<div style="padding:20px;text-align:center;color:#4A6175;font-size:13px">Cargando modelos...</div>';
+  try {
+    if (!vehCache.models[m]) {
+      var data = await api('vehicles', { brand: m });
+      vehCache.models[m] = data.data;
+    }
+    grid.innerHTML = '';
+    vehCache.models[m].forEach(function(mod){
+      var range = (mod.year_from && mod.year_until) ? mod.year_from+' - '+mod.year_until : '';
+      grid.innerHTML += '<button class="sel-btn" onclick="pickModelo(\''+mod.name.replace(/'/g,"\\'")+'\')"><div class="sel-icon">'+carSvg+'</div><span class="sel-text">'+mod.name+'</span><span class="sel-count">'+range+'</span></button>';
+    });
+  } catch(e) {
+    grid.innerHTML = '<div style="padding:20px;text-align:center;color:#DC2626;font-size:13px">Error al cargar modelos. <button onclick="pickMarca(\''+m.replace(/'/g,"\\'")+'\')" style="color:#00549F;font-weight:700;border:none;background:none;cursor:pointer;font-family:inherit">Reintentar</button></div>';
+  }
+}
+
+async function pickModelo(mod) {
+  vehSel.modelo = mod; vehSel.anio = null; vehSel.vehicle_id = null;
+  updateVehSteps(3); updateVehSummary();
+  hide('panel-modelo'); show('panel-anio');
+  var grid = document.getElementById('grid-anio');
+  grid.innerHTML = '<div style="padding:20px;text-align:center;color:#4A6175;font-size:13px">Cargando años...</div>';
+  var cacheKey = vehSel.marca + '|' + mod;
+  try {
+    if (!vehCache.years[cacheKey]) {
+      var data = await api('vehicles', { brand: vehSel.marca, model: mod });
+      vehCache.years[cacheKey] = data.data;
+    }
+    grid.innerHTML = '';
+    vehCache.years[cacheKey].forEach(function(y){
+      grid.innerHTML += '<button class="sel-btn" onclick="pickAnio('+y.year+',\''+JSON.stringify(y.versions||[]).replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\')"><div class="sel-icon"><span style="font-size:14px;font-weight:800;color:#00549F">'+String(y.year).slice(2)+'</span></div><span class="sel-text">'+y.year+'</span>'+(y.versions&&y.versions.length>1?'<span class="sel-count">'+y.versions.length+' versiones</span>':'')+'</button>';
+    });
+  } catch(e) {
+    grid.innerHTML = '<div style="padding:20px;text-align:center;color:#DC2626;font-size:13px">Error al cargar años. <button onclick="pickModelo(\''+mod.replace(/'/g,"\\'")+'\')" style="color:#00549F;font-weight:700;border:none;background:none;cursor:pointer;font-family:inherit">Reintentar</button></div>';
+  }
+}
+
+async function pickAnio(y, versionsJson) {
+  vehSel.anio = y;
+  // Tomar el primer vehicle_id disponible
+  try {
+    var versions = typeof versionsJson === 'string' ? JSON.parse(versionsJson.replace(/&quot;/g,'"')) : versionsJson;
+    if (versions && versions.length > 0) vehSel.vehicle_id = versions[0].id;
+  } catch(e){}
+  updateVehSteps(4); updateVehSummary();
+  hide('panel-anio'); document.getElementById('veh-search').style.display = 'none';
+  show('veh-loading');
+  try {
+    var params = vehSel.vehicle_id ? { vehicle_id: vehSel.vehicle_id } : { search: vehSel.marca + ' ' + vehSel.modelo };
+    var data = await api('parts', params);
+    hide('veh-loading');
+    document.getElementById('vv-brand').textContent = vehSel.marca + ' ' + vehSel.modelo;
+    document.getElementById('vv-model').textContent = vehSel.anio + ' · Suspensión';
+    if (data.data && data.data.length > 0) {
+      renderRealProductList('veh-list', data.data);
+    } else {
+      document.getElementById('veh-list').innerHTML = '<div style="text-align:center;padding:20px;color:#4A6175;font-size:13px">No se encontraron productos GRIFFO para este vehículo.</div>';
+    }
+    show('veh-products');
+  } catch(e) {
+    hide('veh-loading');
+    showToast('Error al buscar productos');
+  }
+}
+
+function updateVehSteps(cur) {
+  for(var i=1;i<=3;i++){
+    var d=document.getElementById('sd'+i),l=document.getElementById('slb'+i);
+    d.className='step-dot '+(i<cur?'done':i===cur?'active':'pending');
+    if(i<cur) d.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    else d.textContent=i;
+    l.className='step-label '+(i<cur?'done':i===cur?'active':'');
+  }
+  for(var j=1;j<=2;j++) document.getElementById('sl'+j).className='step-line '+(j<cur?'done':'pending');
+}
+
+function updateVehSummary() {
+  var h = '';
+  if(vehSel.marca) h+='<span class="sel-tag">'+vehSel.marca+'<button onclick="resetVeh(1)">×</button></span>';
+  if(vehSel.modelo) h+='<span class="sel-tag">'+vehSel.modelo+'<button onclick="resetVeh(2)">×</button></span>';
+  if(vehSel.anio) h+='<span class="sel-tag">'+vehSel.anio+'</span>';
+  document.getElementById('veh-summary').innerHTML = h;
+}
+
+function resetVeh(step) {
+  if(step<=1) vehSel={marca:null,modelo:null,anio:null};
+  if(step<=2){vehSel.modelo=null;vehSel.anio=null;}
+  updateVehSteps(step); updateVehSummary();
+  document.getElementById('veh-search').style.display = 'block';
+  hide('veh-products'); hide('veh-loading');
+  document.getElementById('panel-marca').style.display = step<=1?'block':'none';
+  document.getElementById('panel-modelo').style.display = step===2?'block':'none';
+  hide('panel-anio');
+}
+
+// ===== CODIGO (API REAL) =====
+async function searchCodigo() {
+  var raw = document.getElementById('cod-input').value.replace(/[^A-Z0-9]/gi,'').replace(/^GR/i,'');
+  if (!raw) return;
+  hide('cod-result'); hide('cod-noresults'); show('cod-loading');
+  try {
+    var data = await api('parts', { code: raw });
+    hide('cod-loading');
+    if (data.data && data.data.length > 0) {
+      var p = data.data[0];
+      state.currentProduct = p;
+      document.getElementById('cr-cat').textContent = p.category || p.product;
+      document.getElementById('cr-name').textContent = p.product || p.description;
+      document.getElementById('cr-code').textContent = p.code;
+      document.getElementById('cr-desc').textContent = p.description || '';
+      var vehs = (p.vehicles || []).slice(0,4);
+      document.getElementById('cr-vehicles').innerHTML = vehs.map(function(v){return '<span class="rv-tag">'+v.brand+' '+v.model+'</span>'}).join('');
+      // Si hay imagen, mostrarla
+      if (p.pictures && p.pictures.length > 0) {
+        var imgWrap = document.querySelector('#cod-result .result-img');
+        imgWrap.innerHTML = '<img src="'+p.pictures[0].url+'" style="max-width:100%;max-height:160px;object-fit:contain" onerror="this.outerHTML=\''+imgSvg.replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\'">';
+      }
+      show('cod-result');
+      state.lastSearch = 'codigo';
+    } else {
+      show('cod-noresults');
+    }
+  } catch(e) {
+    hide('cod-loading');
+    show('cod-noresults');
+  }
+}
+
+function quickCodigo(c) { document.getElementById('cod-input').value=c; searchCodigo(); }
+function resetCodigo() { document.getElementById('cod-input').value=''; hide('cod-noresults'); hide('cod-result'); document.getElementById('cod-input').focus(); }
+document.getElementById('cod-input').addEventListener('keydown',function(e){if(e.key==='Enter')searchCodigo()});
+
+// ===== PALABRA =====
+var palTimer = null;
+var palInput = document.getElementById('pal-input');
+palInput.addEventListener('input', function(){
+  document.getElementById('pal-clear').style.display = this.value?'block':'none';
+  clearTimeout(palTimer);
+  if(this.value.length>=2) palTimer=setTimeout(searchPalabra,500);
+  else { hide('pal-results'); hide('pal-noresults'); show('pal-quick'); }
+});
+palInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&this.value.length>=2){clearTimeout(palTimer);searchPalabra();}});
+
+async function searchPalabra() {
+  var q = palInput.value.toLowerCase().trim();
+  if(q.length<2) return;
+  hide('pal-results'); hide('pal-noresults'); hide('pal-quick'); show('pal-loading');
+  try {
+    var data = await api('parts', { search: q });
+    hide('pal-loading');
+    if(data.data && data.data.length>0){ showPalabraResults(data.data); } else { show('pal-noresults'); }
+  } catch(e) {
+    hide('pal-loading');
+    show('pal-noresults');
+  }
+}
+
+function showPalabraResults(results) {
+  document.getElementById('pal-count').textContent = results.length+' producto'+(results.length>1?'s':'');
+  var list = document.getElementById('pal-list'); list.innerHTML = '';
+  results.forEach(function(p){
+    list.innerHTML += makeRealProductCard(p, 'palabra');
+  });
+  show('pal-results');
+}
+
+function quickPalabra(t) { palInput.value=t; document.getElementById('pal-clear').style.display='block'; searchPalabra(); }
+function clearPalabra() { palInput.value=''; document.getElementById('pal-clear').style.display='none'; hide('pal-results'); hide('pal-noresults'); show('pal-quick'); palInput.focus(); }
+
+// ===== PRODUCTO (API REAL) =====
+function openProduct(productData) {
+  if (productData) state.currentProduct = productData;
+  var p = state.currentProduct;
+  if (!p) { nav('home'); return; }
+  // Llenar ficha
+  document.getElementById('pp-cat').textContent = (p.category || 'Suspensión') + ' · ' + (p.product || '');
+  document.getElementById('pp-name').textContent = p.product || p.description || p.name;
+  document.getElementById('pp-code').textContent = p.code;
+  // Imagen real
+  var imgWrap = document.querySelector('.prod-img-wrap');
+  if (p.pictures && p.pictures.length > 0) {
+    var existingImg = imgWrap.querySelector('img');
+    if (existingImg) existingImg.remove();
+    var img = document.createElement('img');
+    img.src = p.pictures[0].url;
+    img.style.cssText = 'max-width:100%;max-height:220px;object-fit:contain';
+    img.onerror = function(){ this.style.display='none'; };
+    imgWrap.appendChild(img);
+  }
+  nav('producto');
+}
+function goBackFromProduct() { nav(state.lastSearch || 'home'); }
+function togglePSection(head) { var b=head.nextElementSibling; b.style.display=b.style.display==='none'?'block':'none'; var t=head.querySelector('.p-section-toggle'); if(t)t.classList.toggle('open'); }
+function sendWhatsApp() {
+  var p = state.currentProduct;
+  var code = p ? p.code : 'GR-XXXX';
+  var name = p ? (p.product || p.description) : 'Producto GRIFFO';
+  var msg = 'Hola! Te consulto por el producto GRIFFO *'+code+'* - '+name+'. ¿Tenés disponibilidad y precio? (Enviado desde GRIFFO APP)';
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ===== HELPERS PARA PRODUCTOS REALES =====
+function makeRealProductCard(p, fromScreen) {
+  var imgHtml = (p.pictures && p.pictures.length > 0)
+    ? '<img src="'+p.pictures[0].url+'" style="width:64px;height:64px;object-fit:contain;border-radius:10px" onerror="this.outerHTML=\''+imgSvg.replace(/'/g,"\\'").replace(/"/g,'&quot;')+'\'">'
+    : imgSvg;
+  return '<div class="product-card" onclick="state.lastSearch=\''+fromScreen+'\';openProduct('+escapeAttr(JSON.stringify(p))+')"><div class="product-img">'+imgHtml+'</div><div class="product-info"><div class="product-code">'+esc(p.code)+'</div><div class="product-name">'+esc(p.product||p.description||'')+'</div><div class="product-cat">'+esc(p.category||'Suspensión')+'</div></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C0CDD8" stroke-width="2" style="align-self:center;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg></div>';
+}
+
+function renderRealProductList(listId, products) {
+  var list = document.getElementById(listId); list.innerHTML = '';
+  var screen = listId.split('-')[0];
+  products.forEach(function(p) {
+    list.innerHTML += makeRealProductCard(p, screen);
+  });
+}
+
+function escapeAttr(s) { return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ===== PERFIL =====
+var profDone = {1:true,2:false,3:false};
+function toggleProfSection(h) { var b=h.nextElementSibling; b.style.display=b.style.display==='block'?'none':'block'; }
+function updateProfProgress() {
+  var n=0; if(profDone[1])n++; if(profDone[2])n++; if(profDone[3])n++;
+  var pct=Math.round(n/3*100);
+  document.getElementById('prof-pct').textContent=pct+'%';
+  document.getElementById('prof-fill').style.width=pct+'%';
+  if(pct===100){document.getElementById('prof-hint').textContent='¡Perfil completo!';document.getElementById('prof-hint').style.color='#22C55E';document.getElementById('prof-incentive').style.display='none';}
+  else if(pct>=66){document.getElementById('prof-hint').textContent='¡Casi listo! Completá los datos del negocio';}
+}
+function saveProfSection(c) {
+  if(c===2){if(!document.getElementById('pf-wpp').value||!document.getElementById('pf-prov').value){showToast('Completá WhatsApp y provincia');return;} profDone[2]=true;document.getElementById('pbadge2').textContent='✓ Completo';document.getElementById('pbadge2').className='prof-badge badge-done';document.getElementById('pbody2').style.display='none';}
+  if(c===3){if(!document.getElementById('pf-empresa').value||!document.getElementById('pf-rubro').value){showToast('Completá empresa y rubro');return;} profDone[3]=true;document.getElementById('pbadge3').textContent='✓ Completo';document.getElementById('pbadge3').className='prof-badge badge-done';document.getElementById('pbody3').style.display='none';}
+  updateProfProgress(); showToast('✓ Guardado correctamente');
+}
+
+// ===== HELPERS =====
+function show(id) { var el=document.getElementById(id); if(el){el.style.display=el.classList.contains('loading-wrap')?'flex':'block';} }
+function hide(id) { var el=document.getElementById(id); if(el) el.style.display='none'; }
+function showToast(msg) { var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500); }
+
+// (Real API card functions defined above)
+
+// Init
+initVehiculo();
+updateProfProgress();
+</script>
+</body>
+</html>

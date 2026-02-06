@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const { getToken } = require('./_token');
-
 const API_BASE = 'https://external-api.specparts.ai';
 
 module.exports = async function handler(req, res) {
@@ -10,7 +9,7 @@ module.exports = async function handler(req, res) {
   const { code, search, vehicle_id, page = 1, limit = 20 } = req.query;
 
   if (!code && !search && !vehicle_id) {
-    return res.status(400).json({ error: 'Parámetro requerido: code, search o vehicle_id' });
+    return res.status(400).json({ error: 'Parametro requerido: code, search o vehicle_id' });
   }
 
   try {
@@ -49,9 +48,10 @@ module.exports = async function handler(req, res) {
       throw new Error('Parts API: ' + response.status);
     }
 
-    var data = await response.json();
-    console.log('Parts response keys:', Object.keys(data));
-    console.log('Parts total:', data.total || (data.data ? data.data.length : 'no data key'));
+    var rawText = await response.text();
+    console.log('Parts raw response (500 chars):', rawText.substring(0, 500));
+    var data = JSON.parse(rawText);
+    console.log('Parts keys:', Object.keys(data), 'total:', data.total, 'data_length:', data.data ? data.data.length : 'no data');
 
     var rawParts = data.data || data || [];
     if (!Array.isArray(rawParts)) rawParts = [];

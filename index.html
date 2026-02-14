@@ -133,7 +133,8 @@ catch(e){console.error(e);}
 }
 
 function fillBrands(){
-var br={};P.forEach(function(p){if(p.vehicles)p.vehicles.forEach(function(v){if(v.brand)br[v.brand]=1;});});
+var ex={'AGRALE':1,'IVECO':1,'UNIVERSAL':1};
+var br={};P.forEach(function(p){if(p.vehicles)p.vehicles.forEach(function(v){if(v.brand&&!ex[v.brand])br[v.brand]=1;});});
 var s=document.getElementById('sel-brand');s.innerHTML='<option value="">Seleccion&#225; marca</option>';
 Object.keys(br).sort().forEach(function(b){s.innerHTML+='<option value="'+b+'">'+b+'</option>';});
 }

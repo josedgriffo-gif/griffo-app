@@ -2,105 +2,223 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GRIFFO - Diagnostico API</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GRIFFO APP</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:monospace;background:#111;color:#0f0;padding:20px;font-size:14px}
-h1{color:#0ff;margin-bottom:20px}
-.test{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:16px;margin-bottom:12px}
-.test h3{color:#ff0;margin-bottom:8px}
-.ok{color:#0f0}.fail{color:#f00}.warn{color:#ff0}
-.num{color:#0ff;font-weight:bold}
-pre{white-space:pre-wrap;word-break:break-all;font-size:12px}
-button{background:#0f0;color:#000;border:none;padding:12px 24px;font-size:16px;font-weight:bold;cursor:pointer;border-radius:6px;font-family:monospace}
-button:hover{background:#0a0}
-button:disabled{background:#555;color:#888}
-input{background:#222;color:#0f0;border:1px solid #555;padding:10px;font-size:16px;font-family:monospace;border-radius:6px;width:200px}
-.controls{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
-table{width:100%;border-collapse:collapse;margin-top:8px}
-td,th{padding:4px 8px;border:1px solid #333;text-align:left;font-size:12px}
-th{background:#222;color:#ff0}
+:root{--p:#00549F;--a:#00ADD0;--d:#005B82;--bg:#F0F4F8;--c:#FFF;--t:#0D1B2A;--m:#4A6175}
+body{font-family:'Montserrat',sans-serif;background:var(--bg);min-height:100vh;display:flex;justify-content:center}
+.app{max-width:480px;width:100%;min-height:100vh;position:relative;background:var(--bg)}
+.scr{display:none;flex-direction:column;min-height:100vh}.scr.on{display:flex}
+.hero{background:linear-gradient(165deg,var(--d) 0%,var(--p) 55%,#003A75 100%);padding:40px 24px 48px;position:relative;border-radius:0 0 32px 32px;box-shadow:0 8px 32px rgba(0,59,117,.25);overflow:hidden}
+.hero-c{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
+.logo{width:200px;height:auto}.logo-s{width:120px;height:auto}
+.slo{margin-top:6px;font-size:12.5px;font-weight:700;letter-spacing:4.5px;color:var(--a);text-transform:uppercase}
+.slo-s{font-size:9px;letter-spacing:3px;margin-top:4px;font-weight:700;color:var(--a);text-transform:uppercase}
+.sub{margin-top:16px;font-size:14.5px;font-weight:500;color:rgba(255,255,255,.78);text-align:center}
+.ov{position:absolute;border-radius:50%;pointer-events:none}
+.o1{left:-8%;top:-30%;width:840px;height:560px;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);transform:rotate(-25deg)}
+.o2{left:70%;top:-15%;width:700px;height:460px;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);transform:rotate(15deg)}
+.hdr{background:linear-gradient(165deg,var(--d) 0%,var(--p) 55%,#003A75 100%);padding:20px 20px 24px;position:relative;border-radius:0 0 24px 24px;overflow:hidden;display:flex;align-items:center;gap:12px}
+.bk{background:rgba(255,255,255,.15);border:none;border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;z-index:1;flex-shrink:0}
+.bk svg{stroke:#fff;width:20px;height:20px;fill:none;stroke-width:2;stroke-linecap:round}
+.hdr-info{position:relative;z-index:1}
+.ow{padding:26px 20px 20px;flex:1}
+.ol{font-size:11.5px;font-weight:700;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin-bottom:14px}
+.opts{display:flex;flex-direction:column;gap:11px}
+.ob{display:flex;align-items:center;gap:14px;padding:16px 18px;background:var(--c);border:1px solid rgba(0,84,159,.08);border-radius:14px;cursor:pointer;width:100%;text-align:left;box-shadow:0 2px 12px rgba(0,84,159,.08);transition:all .25s;font-family:inherit;border:none}
+.ob:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,84,159,.15)}
+.oi{width:48px;height:48px;border-radius:12px;background:rgba(0,84,159,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ot{font-size:15px;font-weight:700;color:var(--t)}
+.od{font-size:12.5px;color:var(--m);margin-top:2px}
+.sa{padding:24px 20px}
+.st{font-size:18px;font-weight:800;color:var(--t);margin-bottom:16px}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.fld input,.fld select{width:100%;padding:14px 16px;border:1.5px solid rgba(0,84,159,.12);border-radius:12px;font-size:15px;font-family:inherit;color:var(--t);background:var(--c);outline:none}
+.fld input:focus,.fld select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(0,84,159,.1)}
+.sb{width:100%;padding:16px;border:none;border-radius:14px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,var(--p),var(--d));color:#fff;box-shadow:0 4px 20px rgba(0,84,159,.25);margin-top:8px}
+.sb:disabled{opacity:.5}
+.res{padding:0 20px 20px}
+.rc{background:var(--c);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,84,159,.08)}
+.r-code{font-size:18px;font-weight:800;color:var(--p)}
+.r-desc{font-size:13px;color:var(--t);margin-top:4px}
+.r-cat{font-size:11px;color:var(--m);margin-top:2px}
+.r-imgs{display:flex;gap:8px;margin-top:10px;overflow-x:auto}
+.r-imgs img{height:70px;border-radius:8px;border:1px solid #eee}
+.r-vehi{font-size:11px;color:var(--m);margin-top:8px}
+.r-acts{display:flex;gap:8px;margin-top:12px}
+.bw{flex:1;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;background:#25D366;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px}
+.bm{flex:1;padding:12px;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;background:#FFE600;color:#333;display:flex;align-items:center;justify-content:center;gap:6px}
+.nr{text-align:center;padding:40px 20px;color:var(--m);font-size:14px}
+.ld{text-align:center;padding:40px 20px;color:var(--p);font-weight:600}
+.vi{background:var(--c);border-radius:14px;padding:16px;margin:0 20px 16px;box-shadow:0 2px 12px rgba(0,84,159,.08)}
+.vi h3{font-size:16px;color:var(--p);font-weight:800}
+.vi p{font-size:13px;color:var(--m);margin-top:4px}
+.cnt{font-size:13px;color:var(--m);padding:0 20px 12px}
+.ft{padding:14px 24px 26px;text-align:center;margin-top:auto}
+.sd{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px}
+.sd-d{width:7px;height:7px;border-radius:50%;background:#22C55E;animation:pu 2s infinite}
+.sd-t{font-size:11.5px;font-weight:600;color:#22C55E}
+.ft-t{font-size:10.5px;color:var(--m);font-weight:500}
+.bl{height:4px;background:linear-gradient(90deg,var(--d),var(--p),var(--a))}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.5}}
 </style>
 </head>
 <body>
-<h1>GRIFFO APP - DIAGNOSTICO API</h1>
-<div class="controls">
-<button id="btnRun" onclick="run()">EJECUTAR DIAGNOSTICO</button>
-<input id="codeInput" placeholder="Codigo (ej: 253-32)"/>
-<button id="btnCode" onclick="code()">BUSCAR CODIGO</button>
+<div class="app">
+
+<div id="s-home" class="scr on">
+<div class="hero"><div class="ov o1"></div><div class="ov o2"></div>
+<div class="hero-c">
+<img class="logo" id="logo-main" alt="Griffo">
+<div class="slo">Impulsamos Soluciones</div>
+<div class="sub">Buscador de productos</div>
+</div></div>
+<div class="ow"><div class="ol">&#191;C&#243;mo quer&#233;s buscar?</div>
+<div class="opts">
+<button class="ob" onclick="go('plate')"><div class="oi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="3"/><text x="12" y="15" text-anchor="middle" font-size="6.5" font-weight="700" fill="#00549F" stroke="none" font-family="monospace">AB 123</text></svg></div><div><div class="ot">Por Patente</div><div class="od">Ingres&#225; la patente del veh&#237;culo</div></div></button>
+<button class="ob" onclick="go('vehicle')"><div class="oi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><path d="M5 17h14M6 17l1.5-5.5h9L18 17"/><path d="M7.5 11.5L8.5 8h7l1 3.5"/><circle cx="8" cy="17" r="1.5" fill="#00549F" stroke="none"/><circle cx="16" cy="17" r="1.5" fill="#00549F" stroke="none"/></svg></div><div><div class="ot">Por Veh&#237;culo</div><div class="od">Marca &#8594; Modelo &#8594; A&#241;o</div></div></button>
+<button class="ob" onclick="go('code')"><div class="oi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="13" y2="13"/></svg></div><div><div class="ot">Por C&#243;digo</div><div class="od">C&#243;digo GRIFFO del producto</div></div></button>
+<button class="ob" onclick="go('keyword')"><div class="oi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00549F" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div><div class="ot">Por Palabra</div><div class="od">B&#250;squeda libre</div></div></button>
+</div></div>
+<div class="ft"><div class="sd"><div class="sd-d"></div><span class="sd-t">Cat&#225;logo conectado</span></div><div class="ft-t">GRIFFO SRL &#183; Industria Argentina &#183; griffo.com.ar</div></div>
+<div class="bl"></div>
 </div>
-<div id="out"><div class="test"><h3>Esperando...</h3><p>Presiona EJECUTAR DIAGNOSTICO para comenzar.</p></div></div>
+
+<div id="s-plate" class="scr">
+<div class="hdr"><div class="ov o1"></div><div class="ov o2"></div><button class="bk" onclick="go('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-info"><img class="logo-s" id="logo-plate" alt="Griffo"><div class="slo-s">Impulsamos Soluciones</div></div></div>
+<div class="sa"><div class="st">Buscar por Patente</div><div class="fld"><label>Patente del veh&#237;culo</label><input id="inp-plate" placeholder="Ej: AC923HI" maxlength="10" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')searchPlate()"></div><button class="sb" onclick="searchPlate()">Buscar</button></div>
+<div id="plate-vi"></div><div id="plate-res" class="res"></div>
+<div class="ft"><div class="ft-t">GRIFFO SRL &#183; griffo.com.ar</div></div><div class="bl"></div>
+</div>
+
+<div id="s-vehicle" class="scr">
+<div class="hdr"><div class="ov o1"></div><div class="ov o2"></div><button class="bk" onclick="go('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-info"><img class="logo-s" id="logo-vehi" alt="Griffo"><div class="slo-s">Impulsamos Soluciones</div></div></div>
+<div class="sa"><div class="st">Buscar por Veh&#237;culo</div>
+<div class="fld"><label>Marca</label><select id="sel-brand" onchange="onBrand()"><option value="">Cargando marcas...</option></select></div>
+<div class="fld"><label>Modelo</label><select id="sel-model" onchange="onModel()" disabled><option value="">Primero eleg&#237; marca</option></select></div>
+<div class="fld"><label>A&#241;o</label><select id="sel-year" disabled><option value="">Primero eleg&#237; modelo</option></select></div>
+<button class="sb" onclick="searchVehicle()">Buscar</button></div>
+<div id="vehi-res" class="res"></div>
+<div class="ft"><div class="ft-t">GRIFFO SRL &#183; griffo.com.ar</div></div><div class="bl"></div>
+</div>
+
+<div id="s-code" class="scr">
+<div class="hdr"><div class="ov o1"></div><div class="ov o2"></div><button class="bk" onclick="go('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-info"><img class="logo-s" id="logo-code" alt="Griffo"><div class="slo-s">Impulsamos Soluciones</div></div></div>
+<div class="sa"><div class="st">Buscar por C&#243;digo</div><div class="fld"><label>C&#243;digo del producto</label><input id="inp-code" placeholder="Ej: 253-32" onkeydown="if(event.key==='Enter')searchCode()"></div><button class="sb" onclick="searchCode()">Buscar</button></div>
+<div id="code-res" class="res"></div>
+<div class="ft"><div class="ft-t">GRIFFO SRL &#183; griffo.com.ar</div></div><div class="bl"></div>
+</div>
+
+<div id="s-keyword" class="scr">
+<div class="hdr"><div class="ov o1"></div><div class="ov o2"></div><button class="bk" onclick="go('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-info"><img class="logo-s" id="logo-kw" alt="Griffo"><div class="slo-s">Impulsamos Soluciones</div></div></div>
+<div class="sa"><div class="st">B&#250;squeda Libre</div><div class="fld"><label>Palabra clave</label><input id="inp-kw" placeholder="Ej: amortiguador, fuelle, direccion..." onkeydown="if(event.key==='Enter')searchKw()"></div><button class="sb" onclick="searchKw()">Buscar</button></div>
+<div id="kw-res" class="res"></div>
+<div class="ft"><div class="ft-t">GRIFFO SRL &#183; griffo.com.ar</div></div><div class="bl"></div>
+</div>
+
+</div>
 <script>
-async function run(){
-var b=document.getElementById('btnRun');b.disabled=true;b.textContent='EJECUTANDO...';
-document.getElementById('out').innerHTML='<div class="test"><h3>Conectando con SpecParts API...</h3><p>Cargando productos GRIFFO (10-15 seg)...</p></div>';
-try{var r=await fetch('/api/diagnostic');var d=await r.json();show(d);}
-catch(e){document.getElementById('out').innerHTML='<div class="test"><h3 class="fail">ERROR</h3><pre>'+e.message+'</pre></div>';}
-b.disabled=false;b.textContent='EJECUTAR DIAGNOSTICO';}
+var P=null,LG='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e53EkuAAzc9csBkMCMg5rn/+Kt+F/ij/AJb6Rqyxf7Lq8bD8Udcj3AZexXgA+1aKx/CviC38VeGNP1y1XYl3EHKZJ8twSHTJAztYMM4AOMjg1sUAed/HCeGL4T6sksyI8zwJErMAZG85GKqD1O1WOB2BPavkWvcP2h/F32vV7XwpbNmKxxcXXHWZl+ReVz8qNnIJB8zB5WvD6ACiiigAooooA+/6KKKAPgCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPv+iiigD4AooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD4AooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD7/ooooA+AKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA+/6KKKAPgCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPv+iiigD4Aor7f/4QTwf/0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAPiCivt//hBPB/8A0Kmh/wDguh/+Jo/4QTwf/wBCpof/AILof/iaAOgoooqQCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD//Z';
+function setLogos(){var s='data:image/jpeg;base64,'+LG;document.getElementById('logo-main').src=s;document.getElementById('logo-plate').src=s;document.getElementById('logo-vehi').src=s;document.getElementById('logo-code').src=s;document.getElementById('logo-kw').src=s;}
+setLogos();
 
-async function code(){
-var c=document.getElementById('codeInput').value.trim();if(!c){alert('Ingresa un codigo');return;}
-var b=document.getElementById('btnCode');b.disabled=true;b.textContent='BUSCANDO...';
-try{var r=await fetch('/api/diagnostic?code='+encodeURIComponent(c));var d=await r.json();show(d);}
-catch(e){document.getElementById('out').innerHTML='<div class="test"><h3 class="fail">ERROR</h3><pre>'+e.message+'</pre></div>';}
-b.disabled=false;b.textContent='BUSCAR CODIGO';}
+function go(s){document.querySelectorAll('.scr').forEach(function(e){e.classList.remove('on')});document.getElementById('s-'+s).classList.add('on');window.scrollTo(0,0);if(s!=='home'&&!P)loadP();}
 
-function show(data){
-var h='',t=data.tests||{};
-if(t.credentials){h+='<div class="test"><h3>TEST 1: CREDENCIALES</h3>';
-h+='<p>client_id: <span class="num">'+t.credentials.client_id_first_5+t.credentials.client_id_last_5+'</span></p>';
-h+='<p>secret: <span class="num">'+t.credentials.secret_first_5+t.credentials.secret_last_5+'</span></p>';
-h+='<p style="color:#888">Verificar: client_id empieza con 7vb0Q, secret empieza con gQMbS</p></div>';}
-if(t.auth){var ok=t.auth.status==='OK';
-h+='<div class="test"><h3>'+(ok?'OK':'ERROR')+' TEST 2: AUTENTICACION</h3>';
-h+='<p class="'+(ok?'ok':'fail')+'">'+t.auth.status+'</p>';
-if(t.auth.token_first_10)h+='<p>Token: '+t.auth.token_first_10+'</p>';
-if(t.auth.httpCode)h+='<p class="fail">HTTP '+t.auth.httpCode+'</p></div>';
-else h+='</div>';}
-if(t.products){var pok=t.products.total>100;
-h+='<div class="test"><h3>'+(pok?'OK':'ERROR')+' TEST 3: PRODUCTOS GRIFFO</h3>';
-h+='<p>Total: <span class="num">'+t.products.total+'</span> '+(pok?'CORRECTO':'INCORRECTO')+'</p>';
-h+='<p>Con vehiculos: <span class="num">'+t.products.with_vehicles+'</span></p>';
-h+='<p>Sin vehiculos: <span class="num">'+t.products.without_vehicles+'</span></p>';
-h+='<p>Con imagenes: <span class="num">'+t.products.with_pictures+'</span></p>';
-h+='<p>Con links: <span class="num">'+t.products.with_links+'</span></p>';
-if(t.products.categories){h+='<h4 style="color:#ff0;margin-top:12px">Categorias:</h4><table><tr><th>Categoria</th><th>Cant</th></tr>';
-Object.entries(t.products.categories).sort(function(a,b){return b[1]-a[1]}).forEach(function(e){h+='<tr><td>'+e[0]+'</td><td class="num">'+e[1]+'</td></tr>';});h+='</table>';}
-if(t.products.product_types){h+='<h4 style="color:#ff0;margin-top:12px">Tipos:</h4><table><tr><th>Tipo</th><th>Cant</th></tr>';
-Object.entries(t.products.product_types).sort(function(a,b){return b[1]-a[1]}).forEach(function(e){h+='<tr><td>'+e[0]+'</td><td class="num">'+e[1]+'</td></tr>';});h+='</table>';}
-if(t.products.sample_products){h+='<h4 style="color:#ff0;margin-top:12px">Muestra:</h4><table><tr><th>Codigo</th><th>Desc</th><th>Cat</th><th>Vehic</th><th>Fotos</th></tr>';
-t.products.sample_products.forEach(function(p){h+='<tr><td class="num">'+p.code+'</td><td>'+(p.description||'-')+'</td><td>'+(p.category||'-')+'</td><td class="num">'+p.vehicles_count+'</td><td class="num">'+p.pictures_count+'</td></tr>';});h+='</table>';}
-h+='</div>';}
-if(t.code_suffixes){
-h+='<div class="test"><h3>TEST TERMINACIONES DE CODIGO</h3>';
-h+='<p style="color:#888">Agrupados por terminacion (despues del ultimo guion)</p>';
-h+='<table><tr><th>Terminacion</th><th>Cant</th><th>Ejemplos (codigo = producto (categoria) [vehiculos])</th></tr>';
-Object.entries(t.code_suffixes).sort(function(a,b){return b[1].count-a[1].count}).forEach(function(e){
-var suf=e[0],info=e[1];
-var exList=info.examples.map(function(ex){return ex.code+' = '+ex.product+' ('+ex.category+') ['+ex.vehicles_count+' vehic]';}).join('<br>');
-h+='<tr><td class="num" style="font-size:16px">'+suf+'</td><td class="num">'+info.count+'</td><td style="font-size:11px">'+exList+'</td></tr>';
+async function loadP(){
+try{var r=await fetch('/api/products');var d=await r.json();P=d.products;fillBrands();}
+catch(e){console.error(e);}
+}
+
+function fillBrands(){
+var br={};P.forEach(function(p){if(p.vehicles)p.vehicles.forEach(function(v){if(v.brand)br[v.brand]=1;});});
+var s=document.getElementById('sel-brand');s.innerHTML='<option value="">Seleccion&#225; marca</option>';
+Object.keys(br).sort().forEach(function(b){s.innerHTML+='<option value="'+b+'">'+b+'</option>';});
+}
+
+function onBrand(){
+var b=document.getElementById('sel-brand').value;var ms={};
+P.forEach(function(p){if(p.vehicles)p.vehicles.forEach(function(v){if(v.brand===b&&v.master_model)ms[v.master_model]=1;});});
+var s=document.getElementById('sel-model');s.disabled=!b;s.innerHTML='<option value="">Seleccion&#225; modelo</option>';
+Object.keys(ms).sort().forEach(function(m){s.innerHTML+='<option value="'+m+'">'+m+'</option>';});
+document.getElementById('sel-year').disabled=true;document.getElementById('sel-year').innerHTML='<option value="">Primero eleg&#237; modelo</option>';
+}
+
+function onModel(){
+var b=document.getElementById('sel-brand').value,m=document.getElementById('sel-model').value,ys={};
+P.forEach(function(p){if(p.vehicles)p.vehicles.forEach(function(v){
+if(v.brand===b&&v.master_model===m){for(var y=v.sold_from_year;y<=v.sold_until_year;y++)ys[y]=1;}
+});});
+var s=document.getElementById('sel-year');s.disabled=!m;s.innerHTML='<option value="">Seleccion&#225; a&#241;o (opcional)</option>';
+Object.keys(ys).sort(function(a,b){return b-a}).forEach(function(y){s.innerHTML+='<option value="'+y+'">'+y+'</option>';});
+}
+
+async function searchPlate(){
+var pl=document.getElementById('inp-plate').value.trim().toUpperCase();if(!pl)return;
+document.getElementById('plate-vi').innerHTML='';document.getElementById('plate-res').innerHTML='<div class="ld">Buscando veh&#237;culo...</div>';
+try{
+var r=await fetch('/api/plate?plate='+encodeURIComponent(pl));var v=await r.json();
+if(v.error){document.getElementById('plate-res').innerHTML='<div class="nr">No se encontr&#243; veh&#237;culo para esa patente</div>';return;}
+document.getElementById('plate-vi').innerHTML='<div class="vi"><h3>'+(v.brand||'')+' '+(v.master_model||v.model||'')+'</h3><p>'+(v.version||'')+' ('+(v.sold_from_year||'')+')</p></div>';
+if(!P){document.getElementById('plate-res').innerHTML='<div class="ld">Cargando cat&#225;logo...</div>';var pr=await fetch('/api/products');var pd=await pr.json();P=pd.products;fillBrands();}
+var matches=P.filter(function(p){if(!p.vehicles)return false;return p.vehicles.some(function(pv){
+if(pv.brand!==v.brand)return false;
+if(v.master_model&&pv.master_model===v.master_model)return true;
+if(v.model&&pv.model===v.model)return true;
+return false;
+});});
+render('plate-res',matches);
+}catch(e){document.getElementById('plate-res').innerHTML='<div class="nr">Error: '+e.message+'</div>';}
+}
+
+function searchVehicle(){
+var b=document.getElementById('sel-brand').value,m=document.getElementById('sel-model').value,y=document.getElementById('sel-year').value;
+if(!b){alert('Seleccion\u00e1 al menos una marca');return;}if(!P)return;
+var matches=P.filter(function(p){if(!p.vehicles)return false;return p.vehicles.some(function(v){
+if(v.brand!==b)return false;if(m&&v.master_model!==m)return false;
+if(y){var yr=parseInt(y);if(yr<v.sold_from_year||yr>v.sold_until_year)return false;}
+return true;
+});});
+render('vehi-res',matches);
+}
+
+function searchCode(){
+var c=document.getElementById('inp-code').value.trim();if(!c||!P)return;
+var matches=P.filter(function(p){return p.code&&p.code.toLowerCase().indexOf(c.toLowerCase())>=0;});
+render('code-res',matches);
+}
+
+function searchKw(){
+var k=document.getElementById('inp-kw').value.trim().toLowerCase();if(!k||!P)return;
+var matches=P.filter(function(p){
+var t=((p.code||'')+' '+(p.description||'')+' '+(p.product||'')+' '+(p.category||'')).toLowerCase();
+return t.indexOf(k)>=0;
 });
-h+='</table></div>';}
-if(t.code_search){h+='<div class="test"><h3>TEST 4: BUSQUEDA CODIGO "'+t.code_search.searched+'"</h3>';
-h+='<p>Resultados: <span class="num">'+t.code_search.found+'</span></p>';
-if(t.code_search.matches)t.code_search.matches.forEach(function(m){
-h+='<div style="border-top:1px solid #333;padding-top:8px;margin-top:8px">';
-h+='<p><strong class="num">'+m.code+'</strong> - '+(m.description||'')+'</p>';
-h+='<p>Producto: '+(m.product||'-')+' | Categoria: '+(m.category||'-')+'</p>';
-h+='<p>Vehiculos: <span class="num">'+m.vehicles_count+'</span></p>';
-if(m.vehicles_sample&&m.vehicles_sample.length>0)h+='<p style="color:#888">Ej: '+m.vehicles_sample.join(', ')+'</p>';
-if(m.pictures&&m.pictures.length>0){h+='<p>';m.pictures.forEach(function(u){h+='<img src="'+u+'" style="height:60px;margin:4px;border:1px solid #333;border-radius:4px" onerror="this.style.display=\'none\'"/> ';});h+='</p>';}
-h+='</div>';});h+='</div>';}
-if(t.plate_search){var plok=t.plate_search.status==='OK';
-h+='<div class="test"><h3>'+(plok?'OK':'ERROR')+' TEST 5: PATENTE</h3>';
-h+='<p>Patente: <span class="num">'+t.plate_search.plate+'</span></p>';
-if(plok&&t.plate_search.result&&typeof t.plate_search.result==='object'){var v=t.plate_search.result;
-h+='<p>Vehiculo: <span class="num">'+(v.brand||'?')+' '+(v.model||'?')+' '+(v.version||'')+' ('+(v.year||'?')+')</span></p>';}
-else h+='<p class="'+(plok?'warn':'fail')+'">'+(t.plate_search.message||JSON.stringify(t.plate_search.result))+'</p>';
-h+='</div>';}
-if(data.error)h+='<div class="test"><h3 class="fail">ERROR</h3><pre>'+data.error+'</pre></div>';
-document.getElementById('out').innerHTML=h;}
+render('kw-res',matches);
+}
+
+function render(id,items){
+var el=document.getElementById(id);
+if(!items||items.length===0){el.innerHTML='<div class="nr">No se encontraron productos</div>';return;}
+var h='<div class="cnt">'+items.length+' producto'+(items.length>1?'s':'')+' encontrado'+(items.length>1?'s':'')+'</div>';
+items.forEach(function(p){
+h+='<div class="rc">';
+h+='<div class="r-code">'+(p.code||'')+'</div>';
+h+='<div class="r-desc">'+(p.product||'')+' - '+(p.description||'')+'</div>';
+h+='<div class="r-cat">'+(p.category||'')+'</div>';
+if(p.pictures&&p.pictures.length>0){h+='<div class="r-imgs">';p.pictures.forEach(function(pic){var u=pic.image_url||pic.url||'';if(u)h+='<img src="'+u+'" onerror="this.style.display=\'none\'">';});h+='</div>';}
+if(p.vehicles&&p.vehicles.length>0)h+='<div class="r-vehi">'+p.vehicles.length+' veh\u00edculo'+(p.vehicles.length>1?'s':'')+' compatible'+(p.vehicles.length>1?'s':'')+'</div>';
+h+='<div class="r-acts">';
+var msg='Hola! Vi en la app GRIFFO el producto '+(p.code||'')+' ('+(p.product||'')+'). Tenes disponibilidad y precio?';
+h+='<button class="bw" onclick="window.open(\'https://wa.me/?text='+encodeURIComponent(msg)+'\',\'_blank\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492l4.624-1.472A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.168 0-4.183-.655-5.863-1.776l-.42-.282-2.751.876.877-2.672-.294-.44A9.787 9.787 0 012.182 12 9.818 9.818 0 0112 2.182 9.818 9.818 0 0121.818 12 9.818 9.818 0 0112 21.818z"/></svg>WhatsApp</button>';
+var meli='';if(p.links&&p.links.length>0)p.links.forEach(function(l){if(l.url)meli=l.url;});
+if(meli)h+='<button class="bm" onclick="window.open(\''+meli+'\',\'_blank\')">MercadoLibre</button>';
+h+='</div></div>';
+});
+el.innerHTML=h;
+}
 </script>
 </body>
 </html>

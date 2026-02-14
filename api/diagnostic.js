@@ -1,9 +1,9 @@
-import https from 'https';
-import zlib from 'zlib';
+const https = require('https');
+const zlib = require('zlib');
 
 function specpartsGet(path, token) {
   return new Promise(function(resolve, reject) {
-    var options = {
+    https.get({
       hostname: 'external-api.specparts.ai',
       path: path,
       method: 'GET',
@@ -12,8 +12,7 @@ function specpartsGet(path, token) {
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip'
       }
-    };
-    https.get(options, function(apiRes) {
+    }, function(apiRes) {
       var chunks = [];
       apiRes.on('data', function(c) { chunks.push(c); });
       apiRes.on('end', function() {
@@ -26,7 +25,7 @@ function specpartsGet(path, token) {
               catch(e) { reject(new Error('Decompress failed')); }
             } else {
               try { resolve(JSON.parse(result.toString('utf8'))); }
-              catch(e) { reject(new Error('JSON parse failed after gunzip')); }
+              catch(e) { reject(new Error('JSON parse failed')); }
             }
           });
         } else {
@@ -38,7 +37,7 @@ function specpartsGet(path, token) {
   });
 }
 
-export default async function handler(req, res) {
+module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -95,7 +94,7 @@ export default async function handler(req, res) {
     var sampleProducts = [];
 
     allProducts.forEach(function(p) {
-      var cat = p.category || 'Sin categoría';
+      var cat = p.category || 'Sin categoria';
       if (!categories[cat]) categories[cat] = 0;
       categories[cat]++;
       var prod = p.product || 'Sin producto';
@@ -108,7 +107,7 @@ export default async function handler(req, res) {
         sampleProducts.push({
           code: p.code, brand: p.brand, category: p.category, product: p.product,
           description: p.description, vehicles_count: p.vehicles ? p.vehicles.length : 0,
-          pictures_count: p.pictures ? p.pictures.length : 0, has_links: p.links && p.links.length > 0
+          pictures_count: p.pictures ? p.pictures.length : 0
         });
       }
     });
@@ -156,4 +155,4 @@ export default async function handler(req, res) {
   } catch(e) { results.error = e.message; }
 
   return res.status(200).json(results);
-}
+};

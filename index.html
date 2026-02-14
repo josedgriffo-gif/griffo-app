@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRIFFO - Diagnóstico API</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: monospace; background: #111; color: #0f0; padding: 20px; font-size: 14px; }
+h1 { color: #0ff; margin-bottom: 20px; }
+.test { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.test h3 { color: #ff0; margin-bottom: 8px; }
+.ok { color: #0f0; }
+.fail { color: #f00; }
+.warn { color: #ff0; }
+.num { color: #0ff; font-weight: bold; }
+pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; }
+button { background: #0f0; color: #000; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 6px; font-family: monospace; }
+button:hover { background: #0a0; }
+button:disabled { background: #555; color: #888; cursor: wait; }
+input { background: #222; color: #0f0; border: 1px solid #555; padding: 10px; font-size: 16px; font-family: monospace; border-radius: 6px; width: 200px; }
+.controls { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.spinner { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+td, th { padding: 4px 8px; border: 1px solid #333; text-align: left; font-size: 12px; }
+th { background: #222; color: #ff0; }
+</style>
+</head>
+<body>
+<h1>🔧 GRIFFO APP - DIAGNÓSTICO API</h1>
+<div class="controls">
+  <button id="btnRun" onclick="runDiagnostic()">▶ EJECUTAR DIAGNÓSTICO</button>
+  <input id="codeInput" placeholder="Código producto (ej: 253-32)" />
+  <button id="btnCode" onclick="searchCode()">🔍 BUSCAR CÓDIGO</button>
+</div>
+<div id="output">
+  <div class="test">
+    <h3>⏳ Esperando...</h3>
+    <p>Presioná "EJECUTAR DIAGNÓSTICO" para comenzar.</p>
+    <p style="color:#888;margin-top:8px;">Esto va a probar: autenticación, carga de productos GRIFFO, categorías, vehículos asociados, y búsqueda por patente.</p>
+  </div>
+</div>
+<script>
+var diagnosticData = null;
+async function runDiagnostic() {
+  var btn = document.getElementById('btnRun');
+  var output = document.getElementById('output');
+  btn.disabled = true;
+  btn.textContent = '⏳ EJECUTANDO...';
+  output.innerHTML = '<div class="test"><h3><span class="spinner">⟳</span> Conectando con SpecParts API...</h3><p>Cargando todos los productos GRIFFO (puede tardar 10-15 segundos)...</p></div>';
+  try {
+    var resp = await fetch('/api/diagnostic');
+    var data = await resp.json();
+    diagnosticData = data;
+    renderResults(data);
+  } catch(e) {
+    output.innerHTML = '<div class="test"><h3 class="fail">❌ ERROR DE CONEXIÓN</h3><pre>' + e.message + '</pre></div>';
+  }
+  btn.disabled = false;
+  btn.textContent = '▶ EJECUTAR DIAGNÓSTICO';
+}
+async function searchCode() {
+  var code = document.getElementById('codeInput').value.trim();
+  if (!code) { alert('Ingresá un código'); return; }
+  var btn = document.getElementById('btnCode');
+  btn.disabled = true;
+  btn.textContent = '⏳ BUSCANDO...';
+  try {
+    var resp = await fetch('/api/diagnostic?code=' + encodeURIComponent(code));
+    var data = await resp.json();
+    diagnosticData = data;
+    renderResults(data);
+  } catch(e) {
+    document.getElementById('output').innerHTML = '<div class="test"><h3 class="fail">❌ ERROR</h3><pre>' + e.message + '</pre></div>';
+  }
+  btn.disabled = false;
+  btn.textContent = '🔍 BUSCAR CÓDIGO';
+}
+function renderResults(data) {
+  var html = '';
+  var t = data.tests || {};
+  if (t.credentials) {
+    html += '<div class="test"><h3>🔑 TEST 1: CREDENCIALES</h3>';
+    html += '<p>client_id: <span class="num">' + t.credentials.client_id_first_5 + t.credentials.client_id_last_5 + '</span></p>';
+    html += '<p>secret: <span class="num">' + t.credentials.secret_first_5 + t.credentials.secret_last_5 + '</span></p>';
+    html += '<p style="color:#888;margin-top:4px;">⚠️ Jose: verificá que client_id empiece con 7vb0Q y secret empiece con gQMbS</p>';
+    html += '</div>';
+  }
+  if (t.auth) {
+    var authOk = t.auth.status === 'OK';
+    html += '<div class="test"><h3>' + (authOk ? '✅' : '❌') + ' TEST 2: AUTENTICACIÓN</h3>';
+    html += '<p class="' + (authOk ? 'ok' : 'fail') + '">' + t.auth.status + '</p>';
+    if (t.auth.token_first_10) html += '<p>Token: ' + t.auth.token_first_10 + '</p>';
+    if (t.auth.httpCode) html += '<p class="fail">HTTP ' + t.auth.httpCode + '</p>';
+    html += '</div>';
+  }
+  if (t.products) {
+    var prodOk = t.products.total > 100;
+    html += '<div class="test"><h3>' + (prodOk ? '✅' : '❌') + ' TEST 3: PRODUCTOS GRIFFO</h3>';
+    html += '<p>Total productos: <span class="num">' + t.products.total + '</span> ' + (prodOk ? '(CORRECTO ✅)' : '(INCORRECTO ❌)') + '</p>';
+    html += '<p>Con vehículos asociados: <span class="num">' + t.products.with_vehicles + '</span></p>';
+    html += '<p>Sin vehículos: <span class="num">' + t.products.without_vehicles + '</span></p>';
+    html += '<p>Con imágenes: <span class="num">' + t.products.with_pictures + '</span></p>';
+    html += '<p>Con links: <span class="num">' + t.products.with_links + '</span></p>';
+    if (t.products.categories) {
+      html += '<h4 style="color:#ff0;margin-top:12px;">Categorías:</h4><table><tr><th>Categoría</th><th>Cant</th></tr>';
+      Object.entries(t.products.categories).sort(function(a,b){return b[1]-a[1];}).forEach(function(e) {
+        html += '<tr><td>' + e[0] + '</td><td class="num">' + e[1] + '</td></tr>';
+      });
+      html += '</table>';
+    }
+    if (t.products.product_types) {
+      html += '<h4 style="color:#ff0;margin-top:12px;">Tipos de producto:</h4><table><tr><th>Tipo</th><th>Cant</th></tr>';
+      Object.entries(t.products.product_types).sort(function(a,b){return b[1]-a[1];}).forEach(function(e) {
+        html += '<tr><td>' + e[0] + '</td><td class="num">' + e[1] + '</td></tr>';
+      });
+      html += '</table>';
+    }
+    if (t.products.sample_products) {
+      html += '<h4 style="color:#ff0;margin-top:12px;">Muestra:</h4><table><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Vehículos</th><th>Fotos</th></tr>';
+      t.products.sample_products.forEach(function(p) {
+        html += '<tr><td class="num">' + p.code + '</td><td>' + (p.description||'-') + '</td><td>' + (p.category||'-') + '</td><td class="num">' + p.vehicles_count + '</td><td class="num">' + p.pictures_count + '</td></tr>';
+      });
+      html += '</table>';
+    }
+    html += '</div>';
+  }
+  if (t.code_search) {
+    html += '<div class="test"><h3>🔍 TEST 4: BÚSQUEDA CÓDIGO "' + t.code_search.searched + '"</h3>';
+    html += '<p>Resultados: <span class="num">' + t.code_search.found + '</span></p>';
+    if (t.code_search.matches && t.code_search.matches.length > 0) {
+      t.code_search.matches.forEach(function(m) {
+        html += '<div style="border-top:1px solid #333;padding-top:8px;margin-top:8px;">';
+        html += '<p><strong class="num">' + m.code + '</strong> - ' + (m.description||'') + '</p>';
+        html += '<p>Producto: ' + (m.product||'-') + ' | Categoría: ' + (m.category||'-') + '</p>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRIFFO - Búsqueda por Medidas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(165deg, #005B82 0%, #00549F 55%, #003A75 100%);
+            padding: 30px 20px 40px;
+            border-radius: 0 0 32px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before,
+        .header::after {
+            content: '';
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .header::before {
+            width: 300px;
+            height: 150px;
+            top: -50px;
+            right: -100px;
+            transform: rotate(73.5deg);
+        }
+
+        .header::after {
+            width: 200px;
+            height: 100px;
+            bottom: -30px;
+            left: -50px;
+            transform: rotate(73.5deg);
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 30px;
+            color: white;
+            font-size: 24px;
+            text-decoration: none;
+            z-index: 10;
+        }
+
+        .logo {
+            width: 200px;
+            margin: 0 auto 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .slogan {
+            color: #00ADD0;
+            font-size: 12.5px;
+            font-weight: 700;
+            letter-spacing: 4.5px;
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-title {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00549F;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .type-btn {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .type-btn:active {
+            transform: scale(0.98);
+        }
+
+        .type-btn.selected {
+            border-color: #00549F;
+            background: linear-gradient(165deg, #005B82 0%, #00549F 55%, #003A75 100%);
+        }
+
+        .type-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        .type-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00549F;
+        }
+
+        .type-btn.selected .type-label {
+            color: white;
+        }
+
+        .filters-section {
+            display: none;
+        }
+
+        .filters-section.active {
+            display: block;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-title {
+            color: #00549F;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .change-type {
+            color: #00ADD0;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: underline;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .measures-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .measure-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .measure-btn:active {
+            transform: scale(0.95);
+        }
+
+        .measure-btn.selected {
+            border-color: #00549F;
+            background: #00549F;
+        }
+
+        .measure-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00549F;
+        }
+
+        .measure-btn.selected .measure-value {
+            color: white;
+        }
+
+        .measure-count {
+            font-size: 11px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .measure-btn.selected .measure-count {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-count {
+            color: #00549F;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .product-header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .product-image {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-code {
+            color: #00549F;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .product-name {
+            color: #333;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .product-category {
+            background: #e3f2fd;
+            color: #00549F;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .product-measures {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 15px;
+        }
+
+        .measures-title {
+            color: #00549F;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .measures-grid-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .measure-item {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .measure-label {
+            color: #666;
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .measure-value-display {
+            color: #00549F;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .no-results-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .no-results-text {
+            color: #666;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .back-to-filters {
+            background: white;
+            border: 2px solid #00549F;
+            color: #00549F;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/" class="back-btn">←</a>
+        <img src="/griffologoblancotransparente.png" alt="GRIFFO" class="logo">
+        <div class="slogan">IMPULSAMOS SOLUCIONES</div>
+        <div class="page-title">Búsqueda por Medidas</div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <div style="color: #00549F; font-weight: 600;">Cargando productos...</div>
+        </div>
+
+        <div id="typeSelector" class="type-selector" style="display: none;">
+            <div class="type-btn" onclick="selectType('FUELLE')">
+                <div class="type-icon">🔧</div>
+                <div class="type-label">FUELLES</div>
+            </div>
+            <div class="type-btn" onclick="selectType('TOPE')">
+                <div class="type-icon">⚙️</div>
+                <div class="type-label">TOPES</div>
+            </div>
+        </div>
+
+        <div id="filtersSection" class="filters-section">
+            <div class="filter-header">
+                <div class="filter-title" id="filterTitle">Seleccioná la medida:</div>
+                <button class="change-type" onclick="clearAll()">Cambiar tipo</button>
+            </div>
+            <div id="measuresGrid" class="measures-grid"></div>
+        </div>
+
+        <div id="resultsSection" class="results-section">
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">0 productos</div>
+                <button class="change-type" onclick="clearFilter()">Cambiar medida</button>
+            </div>
+            <div id="productsList"></div>
+            <div id="noResults" class="no-results" style="display: none;">
+                <div class="no-results-icon">🔍</div>
+                <div class="no-results-text">No se encontraron productos</div>
+                <button class="back-to-filters" onclick="clearFilter()">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allProducts = [];
+        let selectedType = null;
+        let selectedMeasure = null;
+
+        async function init() {
+            try {
+                const response = await fetch('/api/proxy-parts');
+                if (!response.ok) throw new Error('Error al cargar productos');
+                
+                const data = await response.json();
+                allProducts = data.data;
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('typeSelector').style.display = 'grid';
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: #c62828; font-weight: 600;">
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function selectType(type) {
+            selectedType = type;
+            selectedMeasure = null;
+
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.closest('.type-btn').classList.add('selected');
+
+            const filteredProducts = allProducts.filter(p => 
+                p.product.includes(type) && !p.product.includes('KIT')
+            );
+
+            const measures = extractMeasures(filteredProducts);
+            renderMeasureFilters(measures);
+        }
+
+        function extractMeasures(products) {
+            const measuresMap = new Map();
+
+            products.forEach(product => {
+                if (product.attributes && Array.isArray(product.attributes)) {
+                    product.attributes.forEach(attr => {
+                        if (attr.unit === 'mm' && attr.name.includes('DIÁMETRO')) {
+                            const key = `${attr.name}|${attr.value}`;
+                            if (!measuresMap.has(key)) {
+                                measuresMap.set(key, {
+                                    name: attr.name,
+                                    value: parseFloat(attr.value),
+                                    displayValue: `${attr.value} mm`,
+                                    count: 0
+                                });
+                            }
+                            measuresMap.get(key).count++;
+                        }
+                    });
+                }
+            });
+
+            return Array.from(measuresMap.values()).sort((a, b) => a.value - b.value);
+        }
+
+        function renderMeasureFilters(measures) {
+            const container = document.getElementById('measuresGrid');
+            const title = document.getElementById('filterTitle');
+
+            if (measures.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">
+                        No se encontraron medidas
+                    </div>
+                `;
+                return;
+            }
+
+            title.textContent = `Seleccioná la medida (${measures.length} disponibles):`;
+
+            container.innerHTML = measures.map(m => `
+                <div class="measure-btn" onclick='selectMeasure(${JSON.stringify(m)})'>
+                    <div class="measure-value">${m.displayValue}</div>
+                    <div class="measure-count">${m.count} prod.</div>
+                </div>
+            `).join('');
+
+            document.getElementById('filtersSection').classList.add('active');
+        }
+
+        function selectMeasure(measure) {
+            selectedMeasure = measure;
+
+            const filtered = allProducts.filter(p => {
+                if (!p.product.includes(selectedType) || p.product.includes('KIT')) return false;
+                
+                if (p.attributes && Array.isArray(p.attributes)) {
+                    return p.attributes.some(attr => 
+                        attr.name === measure.name && 
+                        parseFloat(attr.value) === measure.value
+                    );
+                }
+                return false;
+            });
+
+            renderResults(filtered);
+        }
+
+        function renderResults(products) {
+            const container = document.getElementById('productsList');
+            const countEl = document.getElementById('resultsCount');
+            const noResults = document.getElementById('noResults');
+
+            countEl.textContent = `${products.length} producto${products.length !== 1 ? 's' : ''}`;
+
+            if (products.length === 0) {
+                container.innerHTML = '';
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+                container.innerHTML = products.map(p => `
+                    <div class="product-card">
+                        <div class="product-header">
+                            ${p.pictures && p.pictures[0] ? `
+                                <img src="${p.pictures[0].image_url}" alt="${p.code}" class="product-image">
+                            ` : ''}
+                            <div class="product-info">
+                                <div class="product-code">${p.code}</div>
+                                <div class="product-name">${p.product}</div>
+                                <div class="product-category">${p.category || 'SUSPENSIÓN'}</div>
+                            </div>
+                        </div>
+                        ${p.attributes && p.attributes.length > 0 ? `
+                            <div class="product-measures">
+                                <div class="measures-title">Medidas / Atributos</div>
+                                <div class="measures-grid-display">
+                                    ${p.attributes.map(attr => `
+                                        <div class="measure-item">
+                                            <div class="measure-label">${attr.name}</div>
+                                            <div class="measure-value-display">
+                                                ${attr.unit ? `${attr.value} ${attr.unit}` : attr.value}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('filtersSection').classList.remove('active');
+            document.getElementById('resultsSection').classList.add('active');
+        }
+
+        function clearFilter() {
+            selectedMeasure = null;
+            document.getElementById('resultsSection').classList.remove('active');
+            
+            const filteredProducts = allProducts.filter(p => 
+                p.product.includes(selectedType) && !p.product.includes('KIT')
+            );
+            const measures = extractMeasures(filteredProducts);
+            renderMeasureFilters(measures);
+        }
+
+        function clearAll() {
+            selectedType = null;
+            selectedMeasure = null;
+            
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.getElementById('filtersSection').classList.remove('active');
+            document.getElementById('resultsSection').classList.remove('active');
+        }
+
+        init();
+    </script>
+</body>
+</html>
